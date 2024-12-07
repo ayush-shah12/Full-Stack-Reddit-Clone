@@ -1,13 +1,14 @@
 // ************** THIS IS YOUR APP'S ENTRY POINT. CHANGE THIS FILE AS NEEDED. **************
 // ************** DEFINE YOUR REACT COMPONENTS in ./components directory **************
-import './stylesheets/App.css';
-import Phreddit from './components/phreddit.js'
+import { ViewContextProvider } from './context/ViewContext.jsx';
+import Wrapper from './Wrapper.jsx';
 
 function App() {
+
   return (
-    <section className="phreddit">
-      <Phreddit />
-    </section>
+    <ViewContextProvider>
+        <Wrapper/> 
+    </ViewContextProvider>
   );
 }
 
