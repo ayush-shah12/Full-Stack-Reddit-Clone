@@ -7,6 +7,9 @@ import CreateCommunity from "./pages/CreateCommunityPage";
 import CommunityPage from "./pages/CommunityPage";
 import NewPost from "./pages/NewPost";
 import NewComment from "./pages/NewCommentPage";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import WelcomePage from "./pages/WelcomePage";
 
 const Wrapper = () => {
     const { view} = useContext(ViewContext);
@@ -15,6 +18,15 @@ const Wrapper = () => {
     switch (view) {
       case "Home":
         content = <HomePage />;
+        break;
+      case "WelcomePage":
+        content = <WelcomePage />;
+        break;
+      case "Login":
+        content = <Login />;
+        break;
+      case "Register":
+        content = <Register />;
         break;
       case "PostPage":
         content = <PostPage />;

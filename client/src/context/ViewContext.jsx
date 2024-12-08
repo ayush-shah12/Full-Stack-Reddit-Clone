@@ -2,7 +2,7 @@ import { createContext, useState } from "react";
 export const ViewContext = createContext({});
 
 export function ViewContextProvider({ children }) {
-    const [view, setView] = useState("Home");
+    const [view, setView] = useState("WelcomePage");
     const [postID, setPostID] = useState(null);
     const [communityID, setCommunityID] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");

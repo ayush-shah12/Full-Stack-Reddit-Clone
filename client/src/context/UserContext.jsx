@@ -1,0 +1,29 @@
+import { createContext, useState } from "react";
+
+export const UserContext = createContext({});
+
+
+/*
+    authUser = {
+        id: ,
+        firstName: ,
+        lastName: ,
+        username: ,
+        email: 
+        }
+
+*/
+export function UserContextProvider({ children }) {
+    const [authUser, setAuthUser] = useState(null);
+
+    return (
+        <UserContext.Provider
+            value={{
+                authUser,
+                setAuthUser,
+            }}
+        >
+            {children}
+        </UserContext.Provider>
+    );
+}

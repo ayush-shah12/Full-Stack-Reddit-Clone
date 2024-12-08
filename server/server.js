@@ -1,4 +1,6 @@
 // server running on port 8000
+const authRoutes = require('./routes/auth');
+
 
 const CommunityModel = require('./models/communities');
 const PostModel = require('./models/posts');
@@ -6,14 +8,22 @@ const CommentModel = require('./models/comments');
 const LinkFlairModel = require('./models/linkflairs');
 
 
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require("cors");
+const cookieParser = require('cookie-parser');
+
 
 const app = express();
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors({ credentials: true, origin: 'http://localhost:3000' })); //front end port
 app.use(express.urlencoded({ extended: true }));
+
+// NOTE: all auth routes must be prefixed with /auth
+app.use("/auth", authRoutes);
+
 
 const dbURL = 'mongodb://127.0.0.1:27017/phreddit';
 mongoose.connect(dbURL);
