@@ -25,7 +25,18 @@ const NavBar = () => {
     const fetchCommunities = async () => {
         try {
             const response = await axios.get("http://localhost:8000/communities");
+<<<<<<< Updated upstream
             setCommunities(response.data);
+=======
+           let allCommunities = response.data;
+           if(authUser){
+            //sort comms so that the ones joined by the user appear first
+            const joinedCommunities = allCommunities.filter(c => c.members && c.members.includes(authUser.id));
+            const otherCommunities = allCommunities.filter(c=>!c.members || !c.members.includes(authUser.id));
+            allCommunities = [...joinedCommunities, ...otherCommunities];
+           }
+           setCommunities(allCommunities);
+>>>>>>> Stashed changes
             
         } catch (error) {
             console.error(error);

@@ -9,6 +9,8 @@ const CommunityModel = require('./models/communities');
 const PostModel = require('./models/posts');
 const CommentModel = require('./models/comments');
 const LinkFlairModel = require('./models/linkflairs');
+const UserModel = require('./models/user');
+const { post } = require('./routes/auth');
 
 let userArgs = process.argv.slice(2);
 
@@ -59,6 +61,7 @@ function createCommunity(communityObj) {
         postIDs: communityObj.postIDs,
         startDate: communityObj.startDate,
         members: communityObj.members,
+        createdBy: communityObj.createdBy,
     });
     return newCommunityDoc.save();
 }
@@ -173,29 +176,78 @@ async function initializeDB() {
     };
     let postRef1 = await createPost(post1);
     let postRef2 = await createPost(post2);
+
+    const user1 = await UserModel.create({ username: 'user1', email: 'user1@example.com', password: 'password1', displayName: 'DISPLAYUser One', firstName: 'FirstNAMEUser1', lastName: 'LASTNAMEOne' });
+    const user2 = await UserModel.create({ username: 'user2', email: 'user2@example.com', password: 'password2', displayName: 'DISPLAYUser Two', firstName: 'FirstNAMEUser2', lastName: 'LASTNAMETwo' });
+
+    
+    const user3 = await UserModel.create({ username: 'user3', email: 'user3@example.com', password: 'password3', displayName: 'DISPLAYUser THREE', firstName: 'FirstNAMEUserTHREE', lastName: 'LASTNAMETHREE' });
+
+    const user4 = await UserModel.create({ username: 'user4', email: 'user4@example.com', password: 'password4', displayName: 'DISPLAYUser Four', firstName: 'FirstNAMEUser4', lastName: 'LASTNAMEFour' });
+    const user5 = await UserModel.create({ username: 'user5', email: 'user5@example.com', password: 'password5', displayName: 'DISPLAYUser Five', firstName: 'FirstNAMEUser5', lastName: 'LASTNAMEFive' });
+
     
     // community objects
-    const community1 = {// community object 1
-        communityID: 'community1',
-        name: 'Am I the Jerk?',
-        description: 'A practical application of the principles of justice.',
-        postIDs: [postRef1],
-        startDate: new Date('August 10, 2014 04:18:00'),
-        members: ['rollo', 'shemp', 'catlady13', 'astyanax', 'trucknutz69'],
-        memberCount: 4,
-    };
-    const community2 = { // community object 2
-        communityID: 'community2',
-        name: 'The History Channel',
-        description: 'A fantastical reimagining of our past and present.',
-        postIDs: [postRef2],
-        startDate: new Date('May 4, 2017 08:32:00'),
-        members: ['MarcoArelius', 'astyanax', 'outtheretruth47', 'bigfeet'],
-        memberCount: 4,
-    };
-    let communityRef1 = await createCommunity(community1);
-    let communityRef2 = await createCommunity(community2);
+    // const community1 = {// community object 1
+    //     communityID: 'community1',
+    //     name: 'Am I the Jerk?',
+    //     description: 'A practical application of the principles of justice.',
+    //     postIDs: [postRef1],
+    //     startDate: new Date('August 10, 2014 04:18:00'),
+    //     members: ['rollo', 'shemp', 'catlady13', 'astyanax', 'trucknutz69'],
+    //     memberCount: 4,
+    // };
+    // const community2 = { // community object 2
+    //     communityID: 'community2',
+    //     name: 'The History Channel',
+    //     description: 'A fantastical reimagining of our past and present.',
+    //     postIDs: [postRef2],
+    //     startDate: new Date('May 4, 2017 08:32:00'),
+    //     members: ['MarcoArelius', 'astyanax', 'outtheretruth47', 'bigfeet'],
+    //     memberCount: 4,
+    // };
+    // let communityRef1 = await createCommunity(community1);
+    // let communityRef2 = await createCommunity(community2);
     
+    const community = await createCommunity({
+        postIDs: [postRef1],
+        name: 'Example Community ONEEEEE',
+        description: 'This is an example community.',
+        createdBy: user1._id,
+        members: [user1._id, user2._id],
+    });
+
+    const community2 = await createCommunity({
+        postIDs: [postRef2],
+        name: 'Example Community TWOOOO',
+        description: 'This is an example community.',
+        createdBy: user3._id,
+        members: [user3._id],
+    });
+
+    const community3 = await createCommunity({
+        name: 'Tech Enthusiasts',
+        description: 'A community for tech lovers to discuss the latest in technology.',
+        createdBy: user4._id,
+        members: [user1._id, user4._id, user5._id],
+    });
+
+    const community4 = await createCommunity({
+        name: 'Fitness Freaks',
+        description: 'A community for fitness enthusiasts to share tips and motivation.',
+        createdBy: user4._id,
+        members: [ user4._id, user5._id],
+    });
+
+    const community5 = await createCommunity({
+        name: 'Food Lovers',
+        description: 'A community for foodies to share recipes and restaurant reviews.',
+        createdBy: user5._id,
+        members: [user1._id, user5._id],
+    });
+
+
+
     if (db) {
         db.close();
     }
