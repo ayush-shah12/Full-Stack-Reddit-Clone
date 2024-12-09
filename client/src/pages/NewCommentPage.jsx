@@ -4,18 +4,18 @@ import NavBar from "../components/Navbar";
 import axios from "axios";
 import { ViewContext } from "../context/ViewContext.jsx";
 import "../stylesheets/NewComment.css";
+import { UserContext } from "../context/UserContext.jsx";
 
 const NewComment = () => {
     const { setView, postID, commentID} = useContext(ViewContext);
+    const { authUser } = useContext(UserContext);
 
     //state forms
     const [commentContent, setCommentContent] = useState("");
-    const [username, setUsername] = useState("");
 
     //error states
     const [errors, setErrors] = useState({
         commentContent: "",
-        username: "",
     });
 
     const handleSubmit = async (e) => {
@@ -24,7 +24,6 @@ const NewComment = () => {
         let isValid = true;
         const validationErrors = {
             commentContent: "",
-            username: "",
         };
 
         if(commentContent.trim() === "") {
@@ -36,11 +35,6 @@ const NewComment = () => {
             isValid = false;
         }
 
-        if(username.trim() === "") {
-            validationErrors.username = "Username is required.";
-            isValid = false;
-        }
-
         setErrors(validationErrors);
 
         if(isValid) {
@@ -48,7 +42,7 @@ const NewComment = () => {
             const newCommentData = {
                 content: commentContent.trim(),
                 commentIDs: [],
-                commentedBy: username.trim(),
+                commentedBy: authUser.id,
                 commentedDate: new Date(),
             };
             if(commentID) {
@@ -60,10 +54,8 @@ const NewComment = () => {
             }
             //reset
             setCommentContent("");
-            setUsername("");
             setErrors({
                 commentContent: "",
-                username: "",
             });
             setView("PostPage")
         }
@@ -73,7 +65,6 @@ const NewComment = () => {
     }
         else {
             setCommentContent(commentContent.trim());
-            setUsername(username.trim());
         }
     };
 
@@ -105,7 +96,7 @@ const NewComment = () => {
                             </div>
 
                             {/* username */}
-                            <div className = "form-group">
+                            {/* <div className = "form-group">
                                 <label htmlFor = "username">
                                     Username <span className ="required">*</span>
                                 </label>
@@ -119,7 +110,7 @@ const NewComment = () => {
                                 {errors.username && (
                                     <span className = "error-message">{errors.username}</span>
                                 )}
-                            </div>
+                            </div> */}
                             <button type = "submit" className = "submit-comment-button">
                                 Submit Comment
                             </button>
