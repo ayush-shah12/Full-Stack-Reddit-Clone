@@ -179,35 +179,10 @@ async function initializeDB() {
 
     const user1 = await UserModel.create({ username: 'user1', email: 'user1@example.com', password: 'password1', displayName: 'DISPLAYUser One', firstName: 'FirstNAMEUser1', lastName: 'LASTNAMEOne' });
     const user2 = await UserModel.create({ username: 'user2', email: 'user2@example.com', password: 'password2', displayName: 'DISPLAYUser Two', firstName: 'FirstNAMEUser2', lastName: 'LASTNAMETwo' });
-
-    
     const user3 = await UserModel.create({ username: 'user3', email: 'user3@example.com', password: 'password3', displayName: 'DISPLAYUser THREE', firstName: 'FirstNAMEUserTHREE', lastName: 'LASTNAMETHREE' });
-
     const user4 = await UserModel.create({ username: 'user4', email: 'user4@example.com', password: 'password4', displayName: 'DISPLAYUser Four', firstName: 'FirstNAMEUser4', lastName: 'LASTNAMEFour' });
     const user5 = await UserModel.create({ username: 'user5', email: 'user5@example.com', password: 'password5', displayName: 'DISPLAYUser Five', firstName: 'FirstNAMEUser5', lastName: 'LASTNAMEFive' });
 
-    
-    // community objects
-    // const community1 = {// community object 1
-    //     communityID: 'community1',
-    //     name: 'Am I the Jerk?',
-    //     description: 'A practical application of the principles of justice.',
-    //     postIDs: [postRef1],
-    //     startDate: new Date('August 10, 2014 04:18:00'),
-    //     members: ['rollo', 'shemp', 'catlady13', 'astyanax', 'trucknutz69'],
-    //     memberCount: 4,
-    // };
-    // const community2 = { // community object 2
-    //     communityID: 'community2',
-    //     name: 'The History Channel',
-    //     description: 'A fantastical reimagining of our past and present.',
-    //     postIDs: [postRef2],
-    //     startDate: new Date('May 4, 2017 08:32:00'),
-    //     members: ['MarcoArelius', 'astyanax', 'outtheretruth47', 'bigfeet'],
-    //     memberCount: 4,
-    // };
-    // let communityRef1 = await createCommunity(community1);
-    // let communityRef2 = await createCommunity(community2);
     
     const community = await createCommunity({
         postIDs: [postRef1],

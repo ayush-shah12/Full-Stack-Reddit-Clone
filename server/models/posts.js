@@ -14,7 +14,8 @@ const posts = new mongoose.Schema({
         required: true
     },
     postedBy: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
         required: true
     },
     postedDate: {
@@ -27,8 +28,16 @@ const posts = new mongoose.Schema({
         default: 0,
         required: true
     },
+    votes: {
+        type: Number,
+        default: 0,
+        required: true
+    },
     linkFlairID: {type: mongoose.Schema.Types.ObjectId, ref: 'linkflair'},
     commentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'comment' }],
+    
+    // Not sure if we need this, it was commented out in the original code
+    // community contains posts, so we don't need to store communityID in posts but we can if we want to
     // communityID: {type: mongoose.Schema.Types.ObjectId, ref: 'community'}
 });
 

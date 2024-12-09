@@ -27,6 +27,10 @@ const user = new mongoose.Schema({
         maxlength: 500,
         required: true
     },
+    reputation: {
+        type: Number,
+        default: 100 //regular users start at 100
+    }
 });
 
 

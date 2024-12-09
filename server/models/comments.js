@@ -8,7 +8,7 @@ const comments = new mongoose.Schema({
         maxlength: 500,
         required: true
     },
-    commentedBy: {type: String, required: true},
+    commentedBy: {type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true},
     commentedDate: {
         type: Date,
         default: Date.now,
