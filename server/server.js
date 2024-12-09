@@ -355,10 +355,10 @@ app.get('/linkFlairs', async (req, res) => {
 
 app.post('/communities', async (req, res) => {
     try {
-        const { name, description, creatorUsername } = req.body;
+        const { name, description, user_id } = req.body;
 
         //validation
-        if(!name || !description || !creatorUsername) {
+        if(!name || !description || !user_id) {
             return res.status(400).json({error: "Name, description and username are required."});
         }
 
@@ -375,8 +375,9 @@ app.post('/communities', async (req, res) => {
             description: description.trim(),
             postIDs: [],
             startDate: new Date(),
-            members: [creatorUsername.trim()],
+            members: [user_id],
             memberCount: 1,
+            createdBy: user_id,
         });
         const savedCommunity = await newCommunity.save();
 

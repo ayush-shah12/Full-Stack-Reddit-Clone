@@ -2,23 +2,23 @@ import React, { useContext, useState } from "react";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import { ViewContext } from "../context/ViewContext";
+import { UserContext } from "../context/UserContext";
 import axios from "axios";
 import "../stylesheets/CreateCommunity.css";
 import "../stylesheets/index.css";
 
 const CreateCommunity = () => {
-    const {setView, setCommunityID } = useContext(ViewContext);
+    const { setView, setCommunityID } = useContext(ViewContext);
+    const { authUser } = useContext(UserContext);
 
     //state for form inputs
     const [communityName, setCommunityName] = useState('');
     const [communityDescription, setCommunityDescription] = useState('');
-    const [creatorUsername, setCreatorUsername] = useState('');
 
     //error state
     const [errors, setErrors] = useState({
         communityName: '',
         communityDescription: '',
-        creatorUsername: '',
     });
 
     const handleSubmit = async (e) => {
@@ -28,12 +28,11 @@ const CreateCommunity = () => {
         const newErrors = {
             communityName: '',
             communityDescription: '',
-            creatorUsername: '',
         };
 
         let isValid = true;
 
-        if(communityName.trim() === '') {
+        if (communityName.trim() === '') {
             newErrors.communityName = 'Community name is required.';
             isValid = false;
         }
@@ -42,7 +41,7 @@ const CreateCommunity = () => {
             isValid = false;
         }
 
-        if(communityDescription.trim() === ''){
+        if (communityDescription.trim() === '') {
             newErrors.communityDescription = 'Community description is required.';
             isValid = false;
         }
@@ -51,49 +50,43 @@ const CreateCommunity = () => {
             isValid = false;
         }
 
-        if (creatorUsername.trim() === '') {
-            newErrors.creatorUsername = 'Creator username is required.';
-            isValid = false;
-        }
-
         setErrors(newErrors);
 
-        if(isValid) {
+        if (isValid) {
             try {
                 const newCommunityData = {
                     name: communityName.trim(),
                     description: communityDescription.trim(),
-                    creatorUsername: creatorUsername.trim()
-                    // postIDs: [],
-                    // startDate: new Date(),
-                    // members: [creatorUsername.trim()],
-                    // memberCount: 1,
+                    user_id: authUser.id,
                 };
                 //send post request to server
-                const response = await axios.post('http://localhost:8000/communities', newCommunityData);
+                const response = await axios.post('http://localhost:8000/communities', newCommunityData, 
+                    {validateStatus: (status) => status >= 200 && status < 500});
+
+                if(response.status === 400) {
+                    alert(response.data.error);
+                    return;
+                }
 
                 const savedCommunity = response.data;
 
                 setCommunityID(savedCommunity._id);
                 setView('CommunityPage');
 
-                    
+
                 //reset fields
                 setCommunityName('');
                 setCommunityDescription('');
-                setCreatorUsername('');
 
                 setErrors({
                     communityName: '',
                     communityDescription: '',
-                    creatorUsername: '',
-    
                 });
 
             }
-            catch(error) {
+            catch (error) {
+                alert("An error occurred. Please try again.");
                 console.error("Error creating community", error);
-                //anything else?
             }
 
 
@@ -101,56 +94,55 @@ const CreateCommunity = () => {
         else {
             setCommunityName(communityName.trim());
             setCommunityDescription(communityDescription.trim());
-            setCreatorUsername(creatorUsername.trim());
         }
 
     };
 
     return (
         <div>
-        <Header/>
-        <div className = "containerSideMain">
-        <Navbar/>
-        <div id="main" className = "main">
-        <div className = "create-community-container">
-            <h2>Create a New Community</h2>
-            <form onSubmit = {handleSubmit} className = "create-community-form">
-                {/*Community Name*/}
-                <div className = "form-group">
-                    <label htmlFor = "communityName">
-                        Community Name <span className = "required">*</span>
-                    </label>
-                    <input
-                    type = "text"
-                    id = "communityName"
-                    value = {communityName}
-                    onChange={(e) => setCommunityName(e.target.value)}
-                    maxLength="100"
-                    required />
-                    {errors.communityName && (
-                        <span className = "error-message">{errors.communityName}</span>
-                    )}
-                    <small>{communityName.length}/100 chars</small>
-                </div>
+            <Header />
+            <div className="containerSideMain">
+                <Navbar />
+                <div id="main" className="main">
+                    <div className="create-community-container">
+                        <h2>Create a New Community</h2>
+                        <form onSubmit={handleSubmit} className="create-community-form">
+                            {/*Community Name*/}
+                            <div className="form-group">
+                                <label htmlFor="communityName">
+                                    Community Name <span className="required">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="communityName"
+                                    value={communityName}
+                                    onChange={(e) => setCommunityName(e.target.value)}
+                                    maxLength="100"
+                                    required />
+                                {errors.communityName && (
+                                    <span className="error-message">{errors.communityName}</span>
+                                )}
+                                <small>{communityName.length}/100 chars</small>
+                            </div>
 
-                {/*Comm Descr */}
-                <div className = "form-group">
-                    <label htmlFor = "communityDescription">
-                        Community Description <span className = "required">*</span>
-                    </label>
-                    <textarea
-                    id = "communityDescription"
-                    value = {communityDescription}
-                    onChange={(e) => setCommunityDescription(e.target.value)}
-                    maxLength="500"
-                    required />
-                    {errors.communityDescription && (
-                        <span className = "error-message">{errors.communityDescription}</span>
-                    )}
-                    <small>{communityDescription.length}/500 chars</small>
-                </div>
-                {/*Creator Username */}
-                <div className = "form-group">
+                            {/*Comm Descr */}
+                            <div className="form-group">
+                                <label htmlFor="communityDescription">
+                                    Community Description <span className="required">*</span>
+                                </label>
+                                <textarea
+                                    id="communityDescription"
+                                    value={communityDescription}
+                                    onChange={(e) => setCommunityDescription(e.target.value)}
+                                    maxLength="500"
+                                    required />
+                                {errors.communityDescription && (
+                                    <span className="error-message">{errors.communityDescription}</span>
+                                )}
+                                <small>{communityDescription.length}/500 chars</small>
+                            </div>
+                            {/*Creator Username */}
+                            {/* <div className = "form-group">
                     <label htmlFor = "creatorUsername">
                        Creator Username <span className = "required">*</span>
                     </label>
@@ -164,17 +156,17 @@ const CreateCommunity = () => {
                     {errors.creatorUsername && (
                         <span className = "error-message">{errors.creatorUsername}</span>
                     )}
+                </div> */}
+
+                            {/*Submit Btn */}
+                            <button type="submit" className="engender-button">
+                                Engender Community
+                            </button>
+
+                        </form>
+                    </div>
                 </div>
-
-                {/*Submit Btn */}
-                <button type = "submit" className = "engender-button">
-                    Engender Community
-                </button>
-
-            </form>
             </div>
-        </div>
-        </div>
         </div>
     );
 
