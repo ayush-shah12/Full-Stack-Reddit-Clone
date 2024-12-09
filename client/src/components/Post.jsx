@@ -93,7 +93,7 @@ function Post({ post, fullPost = false, showCommunityName = true }) {
                         <p>{post.content.trim().substring(0, 80)}</p>
                     </div>
                     <div className="postFooter">
-                        <p>{post.views} views • {numComments} comments</p>
+                        <p>{post.views} views • {numComments} comments • {post.votes} votes</p>
                     </div>
                 </div>
             </div>
@@ -115,7 +115,7 @@ function Post({ post, fullPost = false, showCommunityName = true }) {
                     <p>{post.content}</p>
                 </div>
                 <div className="postFooter">
-                    <p>{post.views} views • {numComments} comments</p>
+                    <p>{post.views} views • {numComments} comments • {post.votes} votes</p>
                 </div>
                 <div className="addCommentButtonContainer">
                     <button onClick={() => {
