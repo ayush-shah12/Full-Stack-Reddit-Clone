@@ -7,6 +7,7 @@ const Register = () => {
     const { setView } = useContext(ViewContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [displayName, setDisplayName] = useState("")
@@ -16,13 +17,18 @@ const Register = () => {
     };
 
     const handleRegister = async () => {
+        //check if passwords match before making a server call:
+        if (password !== confirmPassword) {
+            alert("Passwords do not match.");
+            return;
+        }
         try {
             const response = await axios.post("http://localhost:8000/auth/register", {
-                email: email,
+                email: email.trim(),
                 password: password,
-                firstName: firstName,
-                lastName: lastName,
-                displayName: displayName
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                displayName: displayName.trim()
             }, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -35,13 +41,17 @@ const Register = () => {
                 console.log("User registered successfully");
                 setView("WelcomePage");
             }
-            else if (response.status === 409) {
-                alert("Email already exists");
-                console.error("User already exists");
-            }
+            // else if (response.status === 409) {
+            //     alert("Email already exists");
+            //     console.error("User already exists");
+            // }
             else {
-                alert("A server error occurred. Please try again.");
-                console.error("An error occurred");
+                //use actual response message
+                console.log("response status:", response.status, "response data:", response.data);
+                const errorMessage = response.data || "A server error occured. Please try again.";
+                alert(errorMessage);
+                //alert("A server error occurred. Please try again.");
+                console.error("An error occurred:", errorMessage);
             }
 
         } catch (error) {
@@ -87,6 +97,12 @@ const Register = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                />
+                <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                 />
                 <button onClick={handleRegister}>Register</button>
                 <button onClick={handleLogin}>To Login Page</button>
