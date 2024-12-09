@@ -56,7 +56,25 @@ const Header = () => {
             setView("WelcomePage");
         } catch (error) {
             console.error("Error logging out:", error);
+            alert("Logout failed. Please try again");
         }
+    };
+
+    const handleProfileClick = () => {
+      if(authUser) {
+        alert(`This would show ${authUser.displayName}'s profile. to be implemented`);
+      }
+      else {
+        alert("Please log in to view profile.");
+      }
+    };
+
+    const handleCreatePost = () => {
+      if(authUser) {
+        setView("NewPost");
+      } else {
+        alert("Please log in to create a post");
+      }
     };
     
     return (
@@ -78,8 +96,15 @@ const Header = () => {
             onKeyDown={handleSearchKeyPress}/>
 
         <div className="button-container">
-                <button style={{backgroundColor: (view === "NewPost") ? "rgb(220, 61, 43)" : ""}} className="create nav-link" onClick={() =>setView("NewPost")}>
+                <button style={{backgroundColor: (view === "NewPost") ? "rgb(220, 61, 43)" : ""}} 
+                className={`create nav-link ${!authUser ? 'disabled-button' : ''}`}
+                onClick={handleCreatePost}
+                disabled = {!authUser}>
                     Create Post
+                </button>
+                {/* profile button */}
+                <button className="user nav-link" onClick={handleProfileClick}>
+                  {authUser ? authUser.displayName : "Guest"}
                 </button>
 
                 {authUser && (

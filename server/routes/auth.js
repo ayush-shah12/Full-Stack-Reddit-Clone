@@ -12,12 +12,33 @@ router.post('/register', async (req, res) => {
     if (!firstName || !lastName || !email || !displayName || !password) {
         return res.status(400).json("All fields are required.");
     }
+    //email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json("invalid email format.");
+    }
+    //check if password contains user info
+    const lowerPass = password.toLowerCase();
+    if (
+        lowerPass.includes(firstName.toLowerCase()) ||
+        lowerPass.includes(lastName.toLowerCase()) ||
+        lowerPass.includes(displayName.toLowerCase()) ||
+        lowerPass.includes(email.toLowerCase())
+    ) {
+        return res.status(400).json("Password cannot contain your first/last name, display name, or email.");
+    }
 
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             console.log("User (email) already exists.");
             return res.status(409).json("User (email) already exists.");
+        }
+
+        //check if display name already exist:
+        const existingUserDisplay = await User.findOne({ displayName });
+        if (existingUserDisplay) {
+            return res.status(409).json("Display name already taken.");
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);

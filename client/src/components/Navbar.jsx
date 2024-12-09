@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect } from "react";
+import { UserContext } from "../context/UserContext";
 import axios from "axios";
 import { ViewContext } from "../context/ViewContext";
 import "../stylesheets/Navbar.css";
@@ -7,6 +8,8 @@ const NavBar = () => {
 
   const [communities, setCommunities] = useState([]);
   const { view, setView, communityID, setCommunityID } = useContext(ViewContext);
+  const { authUser } = useContext(UserContext); 
+
   
   const handleNavigation = (targetView, params = {}) => {
     setView(targetView);
@@ -31,11 +34,21 @@ const NavBar = () => {
     fetchCommunities();
 }, []);
 
+  const handleCreateCommunity = () => {
+    if (authUser) {
+      handleNavigation("CreateCommunity");
+   } else {
+      // guest user scenario
+      alert("Please log in to create a community.");
+   }
+  };
   return (
     <div className="sidebar">
       <ul>
-        <div style={{ cursor: "pointer" }} onClick={() => { setView("Home"); setCommunityID(null); }} className="nav-link active">
-          <li style={{backgroundColor: (view === "Home") ? "rgb(220, 61, 43)" : ""}}className="home-link">
+        <div style={{ cursor: "pointer" }} 
+        onClick={() => { setView("Home"); setCommunityID(null); }} className="nav-link active">
+          <li style={{backgroundColor: (view === "Home") ? "rgb(220, 61, 43)" : ""}}
+          className="home-link">
             Home
           </li>
         </div>
@@ -44,9 +57,10 @@ const NavBar = () => {
           Communities
         </h3>
         <div className="create-community-link">
-          <li className={`createCommunity${view ==="CreateCommunity" ? "active" : ""}`}
-           style={{ cursor: "pointer", paddingLeft: "40px", backgroundColor: (view === "CreateCommunity") ? "rgb(220, 61, 43)" : "" }}
-           onClick= {()=> handleNavigation("CreateCommunity")}>
+          <li className={`createCommunity${view ==="CreateCommunity" ? "active" : ""}
+          ${!authUser? "disabled-community" : ""}`}
+           style={{ cursor: authUser? "pointer" : "not-allowed", paddingLeft: "40px", backgroundColor: (view === "CreateCommunity") ? "rgb(220, 61, 43)" : "", opacity: !authUser ? 0.5 : 1 }}
+           onClick= {handleCreateCommunity}>
             Create Community
           </li>
         </div>
