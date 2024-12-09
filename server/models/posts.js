@@ -28,6 +28,11 @@ const posts = new mongoose.Schema({
         default: 0,
         required: true
     },
+    votes: {
+        type: Number,
+        default: 0,
+        required: true
+    },
     linkFlairID: {type: mongoose.Schema.Types.ObjectId, ref: 'linkflair'},
     commentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'comment' }],
     
