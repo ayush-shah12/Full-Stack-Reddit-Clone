@@ -8,7 +8,7 @@ export const UserContext = createContext({});
         id: ,
         firstName: ,
         lastName: ,
-        username: ,
+        displayName: ,
         email: 
         }
 
