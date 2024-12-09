@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import Header from "../components/Header";
 import NavBar from "../components/Navbar";
 import { ViewContext } from "../context/ViewContext";
+import { UserContext } from "../context/UserContext";
 import axios from "axios";
 import "../stylesheets/NewPost.css";
 import "../stylesheets/index.css";
@@ -9,14 +10,13 @@ import "../stylesheets/index.css";
 
 const NewPost = () => {
     const {setView, setPostID} = useContext(ViewContext);
+    const { authUser } = useContext(UserContext);
 
     //state for input forms
     const [selectedCommunity, setSelectedCommunity] = useState('');
     const [postTitle, setPostTitle] = useState('');
     const [linkFlair, setLinkFlair] = useState('');
     const [postContent, setPostContent] = useState('');
-    const [username, setUsername] = useState('');
-
     const [showNewLinkFlairInput, setShowNewLinkFlairInput] = useState(false);
     const [newLinkFlair, setNewLinkFlair] = useState("");
 
@@ -26,7 +26,6 @@ const NewPost = () => {
         postTitle: '',
         linkFlair: '',
         postContent: '',
-        username: '',
         server: '',
 
     });
@@ -38,13 +37,21 @@ const NewPost = () => {
         const fetchCommunities = async () => {
             try {
                 const response = await axios.get('http://localhost:8000/communities');
-                setCommunities(response.data);
+                let communityList = response.data;
+
+                //sort for joined communitites:
+                if(authUser) {
+                    const joinedCommunities = communityList.filter(c => c.members && c.members.includes(authUser.id));
+                    const otherCommunities = communityList.filter(c => !c.members || !c.members.includes(authUser.id));
+                    communityList = [...joinedCommunities, ...otherCommunities];
+                }
+                setCommunities(communityList);
             } catch (error) {
                 console.error("Error fetching communities:", error);
             }
         };
         fetchCommunities();
-    }, []);
+    }, [authUser, setView]);
 
 
     const [availableLinkFlairs, setAvailableLinkFlairs] = useState([]);
@@ -72,7 +79,6 @@ const NewPost = () => {
             postTitle: '',
             linkFlair:'',
             postContent:'',
-            username:'',
             server: '',
         };
 
@@ -104,10 +110,6 @@ const NewPost = () => {
             newErrors.postContent = "Post Content is required.";
             isValid = false;
         }
-        if(username.trim() === "") {
-            newErrors.username = "Username is required.";
-            isValid = false;
-        }
 
         setErrors(newErrors);
 
@@ -116,7 +118,7 @@ const NewPost = () => {
                 const payload = {
                     title: postTitle.trim(),
                     content: postContent.trim(),
-                    postedBy: username.trim(),
+                    postedBy: authUser.id,
                     communityID: selectedCommunity,
                 };
                 if(linkFlair){
@@ -138,13 +140,11 @@ const NewPost = () => {
                 setLinkFlair('');
                 setNewLinkFlair('');
                 setPostContent('');
-                setUsername('');
                 setErrors({
                     selectedCommunity: '',
                     postTitle: '',
                     linkFlair: '',
                     postContent: '',
-                    username: '',
                     server: '',
                 });
             }
@@ -163,7 +163,6 @@ const NewPost = () => {
             setPostTitle(postTitle.trim());
             setNewLinkFlair(newLinkFlair.trim());
             setPostContent(postContent.trim());
-            setUsername(username.trim());
         }
     };
     
@@ -268,19 +267,7 @@ const NewPost = () => {
                     ></textarea>
                     {errors.postContent && <span className="error-message">{errors.postContent}</span>}
                 </div>
-                {/* user */}
-                <div className="form-group">
-                    <label htmlFor="username">Username<span className = "required">*</span></label>
-                    <input
-                        type="text"
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-
-                    />
-                    {errors.username && <span className="error-message">{errors.username}</span>}
-                </div>
+         
                 <button type="submit" className="submit-post-button">
                     Submit Post
                 </button>
