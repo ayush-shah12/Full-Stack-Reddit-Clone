@@ -9,7 +9,9 @@ export const UserContext = createContext({});
         firstName: ,
         lastName: ,
         displayName: ,
-        email: 
+        email:, 
+        reputation:,
+        dateJoined:
         }
 
 */

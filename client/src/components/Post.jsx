@@ -10,7 +10,7 @@ import neutralDownIcon from '../images/downvote_neutral.png'
 import activeDownIcon from '../images/downvote_color.png'
 
 
-function Post({ post, fullPost = false, showCommunityName = true }) {
+function Post({ post, fullPost = false, showCommunityName = true, profilePost = false }) {
     const { setView, setPostID, setCommentID } = useContext(ViewContext);
     const { authUser } = useContext(UserContext); 
 
@@ -147,6 +147,28 @@ function Post({ post, fullPost = false, showCommunityName = true }) {
         downIcon = activeDownIcon;
     }
 
+
+    // only for rendering posts on ****Profile Page****, will allow user to edit post
+    function onClickPostTitle(postID){
+        // set view to EDIT the post
+        // to be implemented
+        alert(`Clicking this will allow you to edit the post: ${post.title}`);
+        return;
+    }
+
+
+    // specifically for rendering posts on ****Profile Page****
+    if (profilePost) {
+        return (
+            <div className="linkToPost nav-link" onClick={() => onClickPostTitle(post._id)} style={{ cursor: "pointer" }}>
+            <div className="profilePost">
+                <div className="postTitle">
+                    <h3>{post.title}</h3>
+                </div>
+            </div>
+        </div>
+        );
+    }
 
     //if user not logged in or rep < 50, we display icons but they're disabled.
     //if guest is viewing post page do not display at all.

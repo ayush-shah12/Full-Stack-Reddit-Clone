@@ -80,7 +80,7 @@ router.post('/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user._id, email: user.email, displayName: user.displayName, firstName: user.firstName, lastName: user.lastName, reputation: user.reputation },
+            { id: user._id, email: user.email, displayName: user.displayName, firstName: user.firstName, lastName: user.lastName, reputation: user.reputation, dateJoined: user.dateJoined },
             JWT_SECRET,
             { expiresIn: '5h' }
         );
@@ -98,7 +98,8 @@ router.post('/login', async (req, res) => {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            reputation: user.reputation
+            reputation: user.reputation,
+            dateJoined: user.dateJoined
         });
     } catch (err) {
         console.error(err);

@@ -158,3 +158,15 @@ height: 20px;
 cursor: pointer;
 }
 
+.profilePost {
+    background-color: rgb(220, 220, 220);
+    padding: 0.5rem;
+    border-radius: 5px;
+    margin-bottom: 0.5rem;
+}
+
+.profilePost h3 {
+    margin: 0;
+    font: 1.2em 'Poppins', sans-serif;
+    color: black;
+}

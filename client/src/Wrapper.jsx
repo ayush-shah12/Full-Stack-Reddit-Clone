@@ -10,6 +10,7 @@ import NewComment from "./pages/NewCommentPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import WelcomePage from "./pages/WelcomePage";
+import ProfilePage from "./pages/ProfilePage";
 
 const Wrapper = () => {
     const { view} = useContext(ViewContext);
@@ -27,6 +28,9 @@ const Wrapper = () => {
         break;
       case "Register":
         content = <Register />;
+        break;
+      case "ProfilePage":
+        content = <ProfilePage />;
         break;
       case "PostPage":
         content = <PostPage />;
