@@ -1,5 +1,11 @@
 // server running on port 8000
 const authRoutes = require('./routes/auth');
+const jwt = require('jsonwebtoken');
+const UserVoteModel = require('./models/userVoteModel'); 
+const UserVoteCommentModel = require('./models/userVoteComment'); 
+
+const UserModel = require('./models/user'); 
+const JWT_SECRET = 'fe95e4372bd1ad3d6a00fc0dd2d5f0743dee17247c1cbd3f9a2efafc6274f744'; // same secret used in auth
 
 
 const CommunityModel = require('./models/communities');
@@ -40,7 +46,7 @@ app.get("/", function (req, res) {
 // gets ALL posts
 app.get("/posts", async (req, res) => {
     try {
-        const posts = await PostModel.find();
+        const posts = await PostModel.find().populate('postedBy', 'displayName');;
         res.send(posts);
     } catch (error) {
         console.error(error);
@@ -51,7 +57,7 @@ app.get("/posts", async (req, res) => {
 // gets post given a postID
 app.get('/posts/:postID', async (req, res) => {
     try {
-        const post = await PostModel.findById(req.params.postID);
+        const post = await PostModel.findById(req.params.postID).populate('postedBy', 'displayName');;
         if (post) {
             res.json(post);
         } else {
@@ -81,7 +87,7 @@ app.get('/postsbycommunity/:communityID', async (req, res) => {
         if (community) {
             const postIDs = community.postIDs;
             for (const postID of postIDs) {
-                const post = await PostModel.findById(postID);
+                const post = await PostModel.findById(postID).populate('postedBy', 'displayName');
                 if (post) {
                     posts.push(post);
                 }
@@ -98,7 +104,9 @@ app.get('/postsbycommunity/:communityID', async (req, res) => {
 // gets community given a communityID
 app.get('/communities/:communityID', async (req, res) => {
     try {
-        const community = await CommunityModel.findById(req.params.communityID);
+        const community = await CommunityModel.findById(req.params.communityID)
+        .populate('createdBy', 'displayName')
+        .populate('members', '_id');
         if (community) {
             res.json(community);
         }
@@ -151,7 +159,7 @@ app.get('/linkFlairs/:linkFlairID', async (req, res) => {
 // gets comments given commentID
 app.get('/comments/:commentID', async (req, res) => {
     try {
-        const comment = await CommentModel.findById(req.params.commentID);
+        const comment = await CommentModel.findById(req.params.commentID).populate('commentedBy', 'displayName');
         if (comment) {
             res.json(comment);
         } else {
@@ -327,7 +335,8 @@ app.post('/post', async(req, res) => {
             postedDate: new Date(),
         });
 
-        const savedPost = await newPost.save();
+        let savedPost = await newPost.save();
+        savedPost = await PostModel.findById(savedPost._id).populate('postedBy', 'displayName');
         //associate post with community
         community.postIDs.push(savedPost._id);
         await community.save();
@@ -436,3 +445,276 @@ app.post('/comments/:commentID/reply', async(req, res) => {
     }
 });
 app.listen(8000, () => { console.log("Server listening on port 8000..."); });
+
+
+
+
+app.post('/posts/:postID/vote', async (req, res) => {
+    try {
+        const { postID } = req.params;
+        const { action } = req.body; //up or down
+
+        const token = req.cookies.token;
+        if (!token) return res.status(401).json({error:"not logged in"});
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET);
+        } catch (e) {
+            return res.status(401).json({error:"invalid token"});
+        }
+
+        const userID = decoded.id;
+        const post = await PostModel.findById(postID);
+        if(!post) return res.status(404).json({error:"post not found"});
+
+        let userVote = await UserVoteModel.findOne({ userID, postID });
+        if(!userVote) {
+            userVote = new UserVoteModel({ userID, postID, vote: 'none' });
+        }
+
+        //vote changes
+        let voteChange = 0;
+        let reputationChange = 0;
+        let newVoteState = userVote.vote; //current state (none, up or down)
+        
+        if (action === 'up') {
+            if (userVote.vote === 'none') {
+                //if none -> up: +1 post vote, +5 rep
+                voteChange = 1;
+                reputationChange = 5;
+                newVoteState = 'up';
+            } else if (userVote.vote === 'up') {
+                //if up -> none: -1 post vote, -5 rep
+                voteChange = -1;
+                reputationChange = -5;
+                newVoteState = 'none';
+            } else if (userVote.vote === 'down') {
+                //if down -> up: +2 post votes, +15 rep (-10 +5)
+                voteChange = 2;
+                reputationChange = 15;
+                newVoteState = 'up';
+            }
+        } else if (action === 'down') {
+            if (userVote.vote === 'none') {
+                //if none -> down: -1 vote, -10 rep
+                voteChange = -1;
+                reputationChange = -10;
+                newVoteState = 'down';
+            } else if (userVote.vote === 'down') {
+                //if down -> none: +1 vote, +10 rep
+                voteChange = 1;
+                reputationChange = 10;
+                newVoteState = 'none';
+            } else if (userVote.vote === 'up') {
+                //if up -> down: -2 votes, -15 rep (+5 to -10)
+                voteChange = -2;
+                reputationChange = -15;
+                newVoteState = 'down';
+            }
+        } else {
+            return res.status(400).json({error:"Invalid action"});
+        }
+
+        //update post votes
+        post.votes += voteChange;
+        await post.save();
+
+        //update userVote record
+        userVote.vote = newVoteState;
+        await userVote.save();
+
+        //update poster's reputation
+        const poster = await UserModel.findById(post.postedBy);
+        if(poster && reputationChange !== 0) {
+            poster.reputation += reputationChange;
+            await poster.save();
+        }
+
+        res.json({success:true,newVoteState,newVoteCount:post.votes});
+    } catch(error) {
+        console.error("Failed to update vote:", error);
+        res.status(500).json({error:"Failed to update vote."});
+    }
+});
+
+
+app.get('/posts/:postID/userVote', async (req, res) => {
+    try {
+        const { postID } = req.params;
+        const token = req.cookies.token;
+        if (!token) {
+            return res.json({vote: "none"});
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET);
+        } catch (e) {
+            return res.json({vote: "none"});
+        }
+
+        const userID = decoded.id;
+        const userVote = await UserVoteModel.findOne({ userID, postID });
+        if (!userVote) {
+            return res.json({vote:"none"});
+        }
+
+        return res.json({vote: userVote.vote});
+    } catch (error) {
+        console.error("Failed to fetch user vote state:", error);
+        res.status(500).json({error:"Failed to fetch vote state"});
+    }
+});
+
+
+
+
+app.get('/comments/:commentID/userVote', async (req, res) => {
+    const { commentID } = req.params;
+    const token = req.cookies.token;
+    if (!token) return res.json({vote: "none"});
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, JWT_SECRET);
+    } catch (e) {
+        return res.json({vote:"none"});
+    }
+
+    const userID = decoded.id;
+    const userVote = await UserVoteCommentModel.findOne({ userID, commentID });
+    if (!userVote) {
+        return res.json({vote:"none"});
+    }
+
+    return res.json({vote: userVote.vote});
+});
+
+//vote on a comment
+app.post('/comments/:commentID/vote', async (req, res) => {
+    try {
+        const { commentID } = req.params;
+        const { action } = req.body; 
+
+        const token = req.cookies.token;
+        if (!token) return res.status(401).json({error:"not logged in"});
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET);
+        } catch (e) {
+            return res.status(401).json({error:"Invalid token"});
+        }
+
+        const userID = decoded.id;
+        const comment = await CommentModel.findById(commentID);
+        if(!comment) return res.status(404).json({error:"Comment not found"});
+
+        let userVote = await UserVoteCommentModel.findOne({ userID, commentID });
+        if(!userVote) {
+            userVote = new UserVoteCommentModel({ userID, commentID, vote: 'none' });
+        }
+
+        let voteChange = 0;
+        let reputationChange = 0;
+        let newVoteState = userVote.vote;
+
+        if (action === 'up') {
+            if (userVote.vote === 'none') {
+                voteChange = 1;
+                reputationChange = 5;
+                newVoteState = 'up';
+            } else if (userVote.vote === 'up') {
+                voteChange = -1;
+                reputationChange = -5;
+                newVoteState = 'none';
+            } else if (userVote.vote === 'down') {
+                voteChange = 2; 
+                reputationChange = 15; 
+                newVoteState = 'up';
+            }
+        } else if (action === 'down') {
+            if (userVote.vote === 'none') {
+                voteChange = -1;
+                reputationChange = -10;
+                newVoteState = 'down';
+            } else if (userVote.vote === 'down') {
+                voteChange = 1;
+                reputationChange = 10;
+                newVoteState = 'none';
+            } else if (userVote.vote === 'up') {
+                voteChange = -2; 
+                reputationChange = -15;
+                newVoteState = 'down';
+            }
+        } else {
+            return res.status(400).json({error:"Invalid action"});
+        }
+
+        comment.votes += voteChange;
+        await comment.save();
+
+        userVote.vote = newVoteState;
+        await userVote.save();
+
+        const commenter = await UserModel.findById(comment.commentedBy);
+        if(commenter && reputationChange !== 0) {
+            commenter.reputation += reputationChange;
+            await commenter.save();
+        }
+
+        res.json({success:true,newVoteState,newVoteCount:comment.votes});
+    } catch(error) {
+        console.error("Failed to update comment vote:", error);
+        res.status(500).json({error:"Failed to update comment vote"});
+    }
+});
+
+
+//join and leave the community buttons
+app.post('/communities/:communityID/join', async (req, res) => {
+    const token = req.cookies.token;
+    if(!token) return res.status(401).json({error:"Not logged in"});
+    let decoded;
+    try {
+        decoded = jwt.verify(token, JWT_SECRET);
+    } catch(e) {
+        return res.status(401).json({error:"Invalid token"});
+    }
+    const userID = decoded.id;
+
+    const community = await CommunityModel.findById(req.params.communityID);
+    if(!community) return res.status(404).json({error:"community not found"});
+
+    community.members.push(userID);
+    community.memberCount = community.members.length;
+    await community.save();
+
+    res.json({success:true});
+});
+
+
+app.post('/communities/:communityID/leave', async (req, res) => {
+    const token = req.cookies.token;
+    if(!token) return res.status(401).json({error:"not logged in"});
+    let decoded;
+    try {
+        decoded = jwt.verify(token, JWT_SECRET);
+    } catch(e) {
+        return res.status(401).json({error:"Invalid token"});
+    }
+    const userID = decoded.id;
+
+    const community = await CommunityModel.findById(req.params.communityID);
+    if(!community) return res.status(404).json({error:"community not found"});
+
+    const index = community.members.indexOf(userID);
+    if(index !== -1) {
+
+    community.members.splice(index, 1);
+    community.memberCount = community.members.length;
+    await community.save();}
+
+    res.json({success:true});
+});
