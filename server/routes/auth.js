@@ -48,7 +48,7 @@ router.post('/register', async (req, res) => {
             lastName,
             email,
             displayName,
-            password: hashedPassword
+            password: hashedPassword,
         });
 
         await newUser.save();
@@ -80,7 +80,7 @@ router.post('/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user._id, email: user.email, displayName: user.displayName, firstName: user.firstName, lastName: user.lastName },
+            { id: user._id, email: user.email, displayName: user.displayName, firstName: user.firstName, lastName: user.lastName, reputation: user.reputation },
             JWT_SECRET,
             { expiresIn: '5h' }
         );

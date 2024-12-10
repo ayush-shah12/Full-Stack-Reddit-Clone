@@ -214,13 +214,13 @@ const Comments = () => {
                                     src={currentVote === 'up' ? activeUpIcon : neutralUpIcon} 
                                     alt="upvote" 
                                     onClick={votingAllowed ? handleCommentUpvote : undefined}
-                                    style={{ cursor: votingAllowed ? 'pointer' : 'not-allowed', opacity: votingAllowed ? 1 : 0.5 }}
+                                    style={{ cursor:  (votingAllowed && commentData.commentedBy._id !== authUser.id) ? 'pointer' : 'default', opacity: votingAllowed ? 1 : 0.5 }}
                                 />
                                 <img 
                                     src={currentVote === 'down' ? activeDownIcon : neutralDownIcon} 
                                     alt="downvote"
                                     onClick={votingAllowed ? handleCommentDownvote : undefined}
-                                    style={{ cursor: votingAllowed ? 'pointer' : 'not-allowed', opacity: votingAllowed ? 1 : 0.5 }}
+                                    style={{ cursor:  (votingAllowed && commentData.commentedBy._id !== authUser.id) ? 'pointer' : 'default', opacity: votingAllowed ? 1 : 0.5 }}
                                 />
                                  <p className = "voteCount" >{commentData.votes} votes </p>
                             </div>

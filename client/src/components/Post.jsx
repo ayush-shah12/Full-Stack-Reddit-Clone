@@ -159,13 +159,13 @@ function Post({ post, fullPost = false, showCommunityName = true }) {
                         src={upIcon} 
                         alt="upvote" 
                         onClick={canVote ? handleUpvote : undefined}
-                        style={{ cursor: (canVote || post.postedBy._id === authUser.id) ? 'pointer' : 'not-allowed', opacity: canVote ? 1 : 0.5 }}
+                        style={{ cursor: (canVote && post.postedBy._id !== authUser.id) ? 'pointer' : 'default', opacity: canVote ? 1 : 0.5 }}
                     />
                     <img 
                         src={downIcon} 
                         alt="downvote"
                         onClick={canVote ? handleDownvote : undefined}
-                        style={{ cursor: (canVote || post.postedBy._id === authUser.id)? 'pointer' : 'not-allowed', opacity: canVote ? 1 : 0.5 }}
+                        style={{ cursor: (canVote && post.postedBy._id !== authUser.id)? 'pointer' : 'default', opacity: canVote ? 1 : 0.5 }}
                     />
                 </div>
             );
