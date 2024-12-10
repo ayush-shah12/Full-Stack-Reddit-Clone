@@ -51,3 +51,13 @@
     height: 10vh;
     width: 4vw;
 }
+.votingSection {
+    display: flex;
+    align-items: center; }
+    
+.voteCount {
+    margin-left: auto;
+    color: black;
+    font: 0.9em 'Poppins', sans-serif;
+
+}

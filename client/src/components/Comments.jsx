@@ -1,16 +1,26 @@
 import "../stylesheets/Comments.css";
 import { useContext, useState, useEffect } from "react";
 import { ViewContext } from "../context/ViewContext";
+import { UserContext } from "../context/UserContext";
 import { generateTimeStamp } from "./utils";
 import image from "../images/thinking-snoo.png";
 import axios from "axios";
 
+import neutralUpIcon from '../images/upvote_neutral.png'
+import activeUpIcon from '../images/upvote_color.png'
+import neutralDownIcon from '../images/downvote_neutral.png'
+import activeDownIcon from '../images/downvote_color.png'
+
 const Comments = () => {
 
     const { postID, setView, setCommentID } = useContext(ViewContext);
+    const { authUser } = useContext(UserContext); 
+
     const [post, setPost] = useState(null);
     const [renderedComments, setRenderedComments] = useState([]);
 
+    const loggedIn = !!authUser;
+    const canVote = loggedIn && authUser.reputation >= 50;
 
     // Fetch the post object
     useEffect(() => {
@@ -122,22 +132,109 @@ const Comments = () => {
             comments.map(async (comment) => {
                 const commentDataRes = await axios.get(`http://localhost:8000/comments/${comment.commentID}`);
                 const commentData = commentDataRes.data;
+                let currentVote = 'none';
+                if (loggedIn) {
+                    const voteRes = await axios.get(`http://localhost:8000/comments/${comment.commentID}/userVote`, { withCredentials: true });
+                    currentVote = voteRes.data.vote || 'none';
+                }
+
+                let upIcon = neutralUpIcon;
+                let downIcon = neutralDownIcon;
+
+                if (currentVote === 'up') {
+                    upIcon = activeUpIcon;
+                } 
+                if (currentVote === 'down') {
+                    downIcon = activeDownIcon;
+                }
+
+                const handleCommentUpvote = async () => {
+                    if (!canVote || commentData.commentedBy._id === authUser.id) return;
+                    try {
+                        const response = await axios.post(`http://localhost:8000/comments/${comment.commentID}/vote`, {action:'up'}, {withCredentials:true});
+                        if(response.data.success) {
+                            commentData.votes = response.data.newVoteCount;
+                            currentVote = response.data.newVoteState;
+                            await fetchAll();                        }
+                    } catch(e) {
+                        console.error("Upvote failed", e);
+                    }
+                };
+
+                const handleCommentDownvote = async () => {
+                    if (!canVote || commentData.commentedBy._id === authUser.id) return;
+                    try {
+                        const response = await axios.post(`http://localhost:8000/comments/${comment.commentID}/vote`, {action:'down'}, {withCredentials:true});
+                        if(response.data.success) {
+                            commentData.votes = response.data.newVoteCount;
+                            currentVote = response.data.newVoteState;
+                            //re-render
+                           await fetchAll();
+                        }
+                    } catch(e) {
+                        console.error("Downvote failed", e);
+                    }
+                };
+
+                const fetchAll = async () => {
+                    if (post && post.commentIDs) {
+                        let dict = {};
+                        try {
+                            await getAllComments(dict, post.commentIDs, postID);
+                            let commentsNested = transformData(dict[postID]);
+                            sortTopLevelComments(commentsNested);
+                            sortReplies(commentsNested);
+                            if (commentsNested.length > 0) {
+                                const newlyRendered = await renderComments(commentsNested);
+                                setRenderedComments(newlyRendered);
+                            } else {
+                                setRenderedComments([]);
+                            }
+                        } catch (error) {
+                            console.error("Error fetching comments:", error);
+                        }
+                    }
+                };
+                const showVoting = () => loggedIn;
+                const votingAllowed = canVote;
+
                 return (
                     <div key={comment.commentID} className="comment">
                         <div className="commentHeader">
-                            <p>u/{commentData.commentedBy} • {generateTimeStamp(commentData.commentedDate)}</p>
+                            <p>u/{commentData.commentedBy.displayName} • {generateTimeStamp(commentData.commentedDate)}</p>
                         </div>
     
                         <div className="commentContent">
                             <p>{commentData.content}</p>
                         </div>
+                       
+                        {loggedIn && showVoting() ? (
+                            <div className="votingSection">
+                                <img 
+                                    src={currentVote === 'up' ? activeUpIcon : neutralUpIcon} 
+                                    alt="upvote" 
+                                    onClick={votingAllowed ? handleCommentUpvote : undefined}
+                                    style={{ cursor: votingAllowed ? 'pointer' : 'not-allowed', opacity: votingAllowed ? 1 : 0.5 }}
+                                />
+                                <img 
+                                    src={currentVote === 'down' ? activeDownIcon : neutralDownIcon} 
+                                    alt="downvote"
+                                    onClick={votingAllowed ? handleCommentDownvote : undefined}
+                                    style={{ cursor: votingAllowed ? 'pointer' : 'not-allowed', opacity: votingAllowed ? 1 : 0.5 }}
+                                />
+                                 <p className = "voteCount" >{commentData.votes} votes </p>
+                            </div>
+                        ) : null}
     
-                        <div className="commentFooter">
+                      
+                        {loggedIn ? (
+                          <div className="commentFooter">
                             <button onClick={() => {
                                 setCommentID(comment.commentID);
                                 setView("NewComment");
                             }}>Reply</button>
-                        </div>
+                          </div>
+                        ) : null}
     
                         {comment.replies.length > 0 && (
                             <div className="replies">

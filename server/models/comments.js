@@ -15,6 +15,7 @@ const comments = new mongoose.Schema({
         required: true
     },
     commentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'comment' }],
+    votes: { type: Number, default: 0, required: true }
 });
 
 comments.virtual('url').get(function () {
