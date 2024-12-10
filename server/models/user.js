@@ -30,6 +30,10 @@ const user = new mongoose.Schema({
     reputation: {
         type: Number,
         default: 100 //regular users start at 100
+    },
+    dateJoined: {
+        type: Date,
+        default: Date.now
     }
 });
 

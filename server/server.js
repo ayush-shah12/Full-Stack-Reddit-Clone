@@ -1,10 +1,10 @@
 // server running on port 8000
 const authRoutes = require('./routes/auth');
 const jwt = require('jsonwebtoken');
-const UserVoteModel = require('./models/userVoteModel'); 
-const UserVoteCommentModel = require('./models/userVoteComment'); 
+const UserVoteModel = require('./models/userVoteModel');
+const UserVoteCommentModel = require('./models/userVoteComment');
 
-const UserModel = require('./models/user'); 
+const UserModel = require('./models/user');
 const JWT_SECRET = 'fe95e4372bd1ad3d6a00fc0dd2d5f0743dee17247c1cbd3f9a2efafc6274f744'; // same secret used in auth
 
 
@@ -105,8 +105,8 @@ app.get('/postsbycommunity/:communityID', async (req, res) => {
 app.get('/communities/:communityID', async (req, res) => {
     try {
         const community = await CommunityModel.findById(req.params.communityID)
-        .populate('createdBy', 'displayName')
-        .populate('members', '_id');
+            .populate('createdBy', 'displayName')
+            .populate('members', '_id');
         if (community) {
             res.json(community);
         }
@@ -114,7 +114,7 @@ app.get('/communities/:communityID', async (req, res) => {
             res.status(404).json({ error: "Community not found" });
         }
     } catch (error) {
-        res.status(500).json({error: "Failed to fetch community"});
+        res.status(500).json({ error: "Failed to fetch community" });
     }
 });
 
@@ -199,14 +199,14 @@ const stopWords = [
     'a', 'an', 'and', 'are', 'as', 'at', 'be', 'but', 'by', 'for', 'if', 'in', 'into', 'is',
     'it', 'no', 'not', 'of', 'on', 'or', 'such', 'that', 'the', 'their', 'then', 'these',
     'they', 'this', 'to', 'was', 'will', 'with'
-  ];
+];
 //search
 app.get('/search', async (req, res) => {
     try {
         const searchQuery = req.query.query;
 
-        if(!searchQuery) {
-            return res.status(400).json({error : "No search query provided"});
+        if (!searchQuery) {
+            return res.status(400).json({ error: "No search query provided" });
         }
 
         //split the search in individual terms
@@ -214,11 +214,11 @@ app.get('/search', async (req, res) => {
 
         //sanitize
         const filteredTerms = searchTerms
-        .filter((term) => !stopWords.includes(term))
-        .map(sanitizeWord)
-        .filter(Boolean);
+            .filter((term) => !stopWords.includes(term))
+            .map(sanitizeWord)
+            .filter(Boolean);
 
-        if(filteredTerms.length === 0) {
+        if (filteredTerms.length === 0) {
             return res.json([]);
         }
         //regex pattern for each search (case insensetive)
@@ -227,48 +227,49 @@ app.get('/search', async (req, res) => {
         //find posts with matching title/content
         const postsMatchingTitleOrContent = await PostModel.find({
             $or: [
-                {title: {$in:regexTerms}},
-                {content: {$in:regexTerms}}
+                { title: { $in: regexTerms } },
+                { content: { $in: regexTerms } }
             ]
         }).select('title content postedBy postedDate views linkFlairID commentIDs')
-        .lean();
-        
+            .lean();
+
         //find posts with nested matching comments
         const postsWithMatchingComments = await PostModel.aggregate([
-            {$match:{}
-        },
-        {
-            $graphLookup: {
-                from: "comments", //frok comments collection
-                startWith: "$commentIDs",
-                connectFromField: "commentIDs", //field to traverse
-                connectToField: "_id", //field to match in the from collection
-                as: "allNestedComments" //output
+            {
+                $match: {}
+            },
+            {
+                $graphLookup: {
+                    from: "comments", //frok comments collection
+                    startWith: "$commentIDs",
+                    connectFromField: "commentIDs", //field to traverse
+                    connectToField: "_id", //field to match in the from collection
+                    as: "allNestedComments" //output
+                }
+            },
+            {
+                $match: {
+                    //check if nested comments containt the query words
+                    "allNestedComments.content": { $in: regexTerms }
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    content: 1,
+                    postedBy: 1,
+                    postedDate: 1,
+                    views: 1,
+                    linkFlairID: 1,
+                    commentIDs: 1
+                }
             }
-        },
-        {
-            $match: {
-                //check if nested comments containt the query words
-                "allNestedComments.content": {$in: regexTerms}
-            }
-        },
-        {
-            $project: {
-                title: 1,
-                content: 1,
-                postedBy: 1,
-                postedDate: 1,
-                views: 1,
-                linkFlairID: 1,
-                commentIDs: 1
-        }
-    }
-    ]);
-       
+        ]);
+
         //combine and remove dublicates
         const allMatchingPosts = [...postsMatchingTitleOrContent, ...postsWithMatchingComments];
 
-        const uniquePostsMap  = {};
+        const uniquePostsMap = {};
         allMatchingPosts.forEach(post => {
             uniquePostsMap[post._id.toString()] = post;
         });
@@ -277,43 +278,43 @@ app.get('/search', async (req, res) => {
 
         res.json(uniquePosts);
     }
-    catch(error) {
+    catch (error) {
         console.error(error);
-        res.status(500).json({error: "Search Failed"});
+        res.status(500).json({ error: "Search Failed" });
     }
 });
 
 //creating post
-app.post('/post', async(req, res) => {
+app.post('/post', async (req, res) => {
     try {
-        const {title, content, postedBy, communityID, linkFlairID, newLinkFlair} = req.body;
+        const { title, content, postedBy, communityID, linkFlairID, newLinkFlair } = req.body;
 
         //check if community exists
         const community = await CommunityModel.findById(communityID);
-        if(!community){
-            return res.status(404).json({error: "Community not found."});
+        if (!community) {
+            return res.status(404).json({ error: "Community not found." });
         }
 
         let validLinkFlairID = null;
-        if(linkFlairID && linkFlairID !== "AddNewLinkFlair") {
+        if (linkFlairID && linkFlairID !== "AddNewLinkFlair") {
             const linkFlair = await LinkFlairModel.findById(linkFlairID);
-            if(!linkFlair){
-                return res.status(400).json({error: "Invalid Link Flair ID."});
+            if (!linkFlair) {
+                return res.status(400).json({ error: "Invalid Link Flair ID." });
             }
             validLinkFlairID = linkFlairID;
         }
-        else if (linkFlairID =="AddNewLinkFlair"){
-            if(!newLinkFlair || newLinkFlair.trim() === ""){
-                return res.status(400).json({error: "New Link Flair name is required."});
+        else if (linkFlairID == "AddNewLinkFlair") {
+            if (!newLinkFlair || newLinkFlair.trim() === "") {
+                return res.status(400).json({ error: "New Link Flair name is required." });
 
             }
-            if(newLinkFlair.trim().length > 30) {
-                return res.status(400).json({error: "Link Flair cannot exceed 30 chars."});
+            if (newLinkFlair.trim().length > 30) {
+                return res.status(400).json({ error: "Link Flair cannot exceed 30 chars." });
 
             }
 
-            const existingFlair = await LinkFlairModel.findOne({content: newLinkFlair.trim()});
-            if(existingFlair) {
+            const existingFlair = await LinkFlairModel.findOne({ content: newLinkFlair.trim() });
+            if (existingFlair) {
                 validLinkFlairID = existingFlair._id;
             }
             else {
@@ -343,21 +344,21 @@ app.post('/post', async(req, res) => {
 
         res.status(201).json(savedPost);
     }
-    catch(error){
+    catch (error) {
         console.error("Error while creating new post:", error);
-        res.status(500).json({error: "Failed to create post."});
+        res.status(500).json({ error: "Failed to create post." });
     }
 });
 
 // fetches link flairs
 app.get('/linkFlairs', async (req, res) => {
-    try{
+    try {
         const linkFlairs = await LinkFlairModel.find();
         res.json(linkFlairs);
     }
-    catch(error){
+    catch (error) {
         console.error("Error fetching link flairs:", error);
-        res.status(500).json({error: "Failed to fetch link flairs"});
+        res.status(500).json({ error: "Failed to fetch link flairs" });
     }
 });
 
@@ -367,15 +368,15 @@ app.post('/communities', async (req, res) => {
         const { name, description, user_id } = req.body;
 
         //validation
-        if(!name || !description || !user_id) {
-            return res.status(400).json({error: "Name, description and username are required."});
+        if (!name || !description || !user_id) {
+            return res.status(400).json({ error: "Name, description and username are required." });
         }
 
         //check for unique community name
 
-        const exisitingCommunity = await CommunityModel.findOne({name: name.trim()});
-        if(exisitingCommunity) {
-            return res.status(400).json({error: "Community name already exists."});
+        const exisitingCommunity = await CommunityModel.findOne({ name: name.trim() });
+        if (exisitingCommunity) {
+            return res.status(400).json({ error: "Community name already exists." });
         }
 
         //new community object:
@@ -392,40 +393,40 @@ app.post('/communities', async (req, res) => {
 
         res.status(201).json(savedCommunity);
     }
-    catch(error) {
-        res.status(500).json({error: "Failed to create community."});
+    catch (error) {
+        res.status(500).json({ error: "Failed to create community." });
     }
 });
 
 //create comment:
 app.post('/posts/:postID/comment', async (req, res) => {
-    const {postID } = req.params;
-    const {content, commentedBy, commentedDate } = req.body;
+    const { postID } = req.params;
+    const { content, commentedBy, commentedDate } = req.body;
 
     try {
         const newComment = new CommentModel({
-            content, 
+            content,
             commentedBy,
             commentedDate: new Date(),
             commentIDs: []
         });
         const savedComment = await newComment.save();
 
-        
-        await PostModel.findByIdAndUpdate(postID, {$push: {commentIDs: savedComment._id }}, {new: true});
+
+        await PostModel.findByIdAndUpdate(postID, { $push: { commentIDs: savedComment._id } }, { new: true });
 
         res.status(201).json(savedComment);
-    } catch(error) {
+    } catch (error) {
         console.error("Error creating comment", error);
-        res.status(500).json({error: "Failed to create comment"});
+        res.status(500).json({ error: "Failed to create comment" });
 
     }
 });
 
 //add a reply to an existing comment
-app.post('/comments/:commentID/reply', async(req, res) => {
-    const {commentID} = req.params;
-    const {content, commentedBy, commentedDate} = req.body;
+app.post('/comments/:commentID/reply', async (req, res) => {
+    const { commentID } = req.params;
+    const { content, commentedBy, commentedDate } = req.body;
 
     try {
         const newComment = new CommentModel({
@@ -436,12 +437,12 @@ app.post('/comments/:commentID/reply', async(req, res) => {
         });
         const savedComment = await newComment.save();
 
-        await CommentModel.findByIdAndUpdate(commentID, {$push: {commentIDs: savedComment._id}}, {new: true});
+        await CommentModel.findByIdAndUpdate(commentID, { $push: { commentIDs: savedComment._id } }, { new: true });
         res.status(201).json(savedComment);
     }
-    catch(error){
+    catch (error) {
         console.error("Error adding reply to comment:", error);
-        res.status(500).json({error: "Failed to add reply"});
+        res.status(500).json({ error: "Failed to add reply" });
     }
 });
 app.listen(8000, () => { console.log("Server listening on port 8000..."); });
@@ -455,21 +456,21 @@ app.post('/posts/:postID/vote', async (req, res) => {
         const { action } = req.body; //up or down
 
         const token = req.cookies.token;
-        if (!token) return res.status(401).json({error:"not logged in"});
+        if (!token) return res.status(401).json({ error: "not logged in" });
 
         let decoded;
         try {
             decoded = jwt.verify(token, JWT_SECRET);
         } catch (e) {
-            return res.status(401).json({error:"invalid token"});
+            return res.status(401).json({ error: "invalid token" });
         }
 
         const userID = decoded.id;
         const post = await PostModel.findById(postID);
-        if(!post) return res.status(404).json({error:"post not found"});
+        if (!post) return res.status(404).json({ error: "post not found" });
 
         let userVote = await UserVoteModel.findOne({ userID, postID });
-        if(!userVote) {
+        if (!userVote) {
             userVote = new UserVoteModel({ userID, postID, vote: 'none' });
         }
 
@@ -477,7 +478,7 @@ app.post('/posts/:postID/vote', async (req, res) => {
         let voteChange = 0;
         let reputationChange = 0;
         let newVoteState = userVote.vote; //current state (none, up or down)
-        
+
         if (action === 'up') {
             if (userVote.vote === 'none') {
                 //if none -> up: +1 post vote, +5 rep
@@ -513,7 +514,7 @@ app.post('/posts/:postID/vote', async (req, res) => {
                 newVoteState = 'down';
             }
         } else {
-            return res.status(400).json({error:"Invalid action"});
+            return res.status(400).json({ error: "Invalid action" });
         }
 
         //update post votes
@@ -526,15 +527,15 @@ app.post('/posts/:postID/vote', async (req, res) => {
 
         //update poster's reputation
         const poster = await UserModel.findById(post.postedBy);
-        if(poster && reputationChange !== 0) {
+        if (poster && reputationChange !== 0) {
             poster.reputation += reputationChange;
             await poster.save();
         }
 
-        res.json({success:true,newVoteState,newVoteCount:post.votes});
-    } catch(error) {
+        res.json({ success: true, newVoteState, newVoteCount: post.votes });
+    } catch (error) {
         console.error("Failed to update vote:", error);
-        res.status(500).json({error:"Failed to update vote."});
+        res.status(500).json({ error: "Failed to update vote." });
     }
 });
 
@@ -544,26 +545,26 @@ app.get('/posts/:postID/userVote', async (req, res) => {
         const { postID } = req.params;
         const token = req.cookies.token;
         if (!token) {
-            return res.json({vote: "none"});
+            return res.json({ vote: "none" });
         }
 
         let decoded;
         try {
             decoded = jwt.verify(token, JWT_SECRET);
         } catch (e) {
-            return res.json({vote: "none"});
+            return res.json({ vote: "none" });
         }
 
         const userID = decoded.id;
         const userVote = await UserVoteModel.findOne({ userID, postID });
         if (!userVote) {
-            return res.json({vote:"none"});
+            return res.json({ vote: "none" });
         }
 
-        return res.json({vote: userVote.vote});
+        return res.json({ vote: userVote.vote });
     } catch (error) {
         console.error("Failed to fetch user vote state:", error);
-        res.status(500).json({error:"Failed to fetch vote state"});
+        res.status(500).json({ error: "Failed to fetch vote state" });
     }
 });
 
@@ -573,46 +574,46 @@ app.get('/posts/:postID/userVote', async (req, res) => {
 app.get('/comments/:commentID/userVote', async (req, res) => {
     const { commentID } = req.params;
     const token = req.cookies.token;
-    if (!token) return res.json({vote: "none"});
+    if (!token) return res.json({ vote: "none" });
 
     let decoded;
     try {
         decoded = jwt.verify(token, JWT_SECRET);
     } catch (e) {
-        return res.json({vote:"none"});
+        return res.json({ vote: "none" });
     }
 
     const userID = decoded.id;
     const userVote = await UserVoteCommentModel.findOne({ userID, commentID });
     if (!userVote) {
-        return res.json({vote:"none"});
+        return res.json({ vote: "none" });
     }
 
-    return res.json({vote: userVote.vote});
+    return res.json({ vote: userVote.vote });
 });
 
 //vote on a comment
 app.post('/comments/:commentID/vote', async (req, res) => {
     try {
         const { commentID } = req.params;
-        const { action } = req.body; 
+        const { action } = req.body;
 
         const token = req.cookies.token;
-        if (!token) return res.status(401).json({error:"not logged in"});
+        if (!token) return res.status(401).json({ error: "not logged in" });
 
         let decoded;
         try {
             decoded = jwt.verify(token, JWT_SECRET);
         } catch (e) {
-            return res.status(401).json({error:"Invalid token"});
+            return res.status(401).json({ error: "Invalid token" });
         }
 
         const userID = decoded.id;
         const comment = await CommentModel.findById(commentID);
-        if(!comment) return res.status(404).json({error:"Comment not found"});
+        if (!comment) return res.status(404).json({ error: "Comment not found" });
 
         let userVote = await UserVoteCommentModel.findOne({ userID, commentID });
-        if(!userVote) {
+        if (!userVote) {
             userVote = new UserVoteCommentModel({ userID, commentID, vote: 'none' });
         }
 
@@ -630,8 +631,8 @@ app.post('/comments/:commentID/vote', async (req, res) => {
                 reputationChange = -5;
                 newVoteState = 'none';
             } else if (userVote.vote === 'down') {
-                voteChange = 2; 
-                reputationChange = 15; 
+                voteChange = 2;
+                reputationChange = 15;
                 newVoteState = 'up';
             }
         } else if (action === 'down') {
@@ -644,12 +645,12 @@ app.post('/comments/:commentID/vote', async (req, res) => {
                 reputationChange = 10;
                 newVoteState = 'none';
             } else if (userVote.vote === 'up') {
-                voteChange = -2; 
+                voteChange = -2;
                 reputationChange = -15;
                 newVoteState = 'down';
             }
         } else {
-            return res.status(400).json({error:"Invalid action"});
+            return res.status(400).json({ error: "Invalid action" });
         }
 
         comment.votes += voteChange;
@@ -659,15 +660,15 @@ app.post('/comments/:commentID/vote', async (req, res) => {
         await userVote.save();
 
         const commenter = await UserModel.findById(comment.commentedBy);
-        if(commenter && reputationChange !== 0) {
+        if (commenter && reputationChange !== 0) {
             commenter.reputation += reputationChange;
             await commenter.save();
         }
 
-        res.json({success:true,newVoteState,newVoteCount:comment.votes});
-    } catch(error) {
+        res.json({ success: true, newVoteState, newVoteCount: comment.votes });
+    } catch (error) {
         console.error("Failed to update comment vote:", error);
-        res.status(500).json({error:"Failed to update comment vote"});
+        res.status(500).json({ error: "Failed to update comment vote" });
     }
 });
 
@@ -675,46 +676,112 @@ app.post('/comments/:commentID/vote', async (req, res) => {
 //join and leave the community buttons
 app.post('/communities/:communityID/join', async (req, res) => {
     const token = req.cookies.token;
-    if(!token) return res.status(401).json({error:"Not logged in"});
+    if (!token) return res.status(401).json({ error: "Not logged in" });
     let decoded;
     try {
         decoded = jwt.verify(token, JWT_SECRET);
-    } catch(e) {
-        return res.status(401).json({error:"Invalid token"});
+    } catch (e) {
+        return res.status(401).json({ error: "Invalid token" });
     }
     const userID = decoded.id;
 
     const community = await CommunityModel.findById(req.params.communityID);
-    if(!community) return res.status(404).json({error:"community not found"});
+    if (!community) return res.status(404).json({ error: "community not found" });
 
     community.members.push(userID);
     community.memberCount = community.members.length;
     await community.save();
 
-    res.json({success:true});
+    res.json({ success: true });
 });
 
 
 app.post('/communities/:communityID/leave', async (req, res) => {
     const token = req.cookies.token;
-    if(!token) return res.status(401).json({error:"not logged in"});
+    if (!token) return res.status(401).json({ error: "not logged in" });
     let decoded;
     try {
         decoded = jwt.verify(token, JWT_SECRET);
-    } catch(e) {
-        return res.status(401).json({error:"Invalid token"});
+    } catch (e) {
+        return res.status(401).json({ error: "Invalid token" });
     }
     const userID = decoded.id;
 
     const community = await CommunityModel.findById(req.params.communityID);
-    if(!community) return res.status(404).json({error:"community not found"});
+    if (!community) return res.status(404).json({ error: "community not found" });
 
     const index = community.members.indexOf(userID);
-    if(index !== -1) {
+    if (index !== -1) {
 
-    community.members.splice(index, 1);
-    community.memberCount = community.members.length;
-    await community.save();}
+        community.members.splice(index, 1);
+        community.memberCount = community.members.length;
+        await community.save();
+    }
 
-    res.json({success:true});
+    res.json({ success: true });
+});
+
+
+// get all posts by a user
+app.get('/users/:userID/posts', async (req, res) => {
+    try {
+        const posts = await PostModel.find({ postedBy: req.params.userID });
+        res.json(posts);
+    } catch (error) {
+        console.error("Error fetching user posts:", error);
+        res.status(500).json({ error: "Failed to fetch user posts" });
+    }
+});
+
+// get all communities by a user
+app.get('/users/:userID/communities', async (req, res) => {
+    try {
+        const communities = await CommunityModel.find({ createdBy: req.params.userID });
+        res.json(communities);
+    } catch (error) {
+        console.error("Error fetching user communities:", error);
+        res.status(500).json({ error: "Failed to fetch user communities" });
+    }
+});
+
+// get all comments by a user
+app.get('/users/:userID/comments', async (req, res) => {
+    try {
+        const comments = await CommentModel.find({ commentedBy: req.params.userID });
+        const commentsWithPostTitles = [];
+
+        for (const comment of comments) {
+            let post = await PostModel.findOne({ commentIDs: comment._id });
+            if (post) {
+                commentsWithPostTitles.push({
+                    comment: comment,
+                    postTitle: post.title
+                });
+            } else {
+                // must be a reply to a comment then
+                while (!post) {
+                    parentComment = await CommentModel.findOne({ commentIDs: comment._id });
+                    if (!parentComment) {
+                        break;
+                    }
+                    post = await PostModel.findOne({ commentIDs: parentComment._id });
+                    if (post) {
+                        commentsWithPostTitles.push({
+                            comment: comment,
+                            postTitle: post.title
+                        });
+                    }
+                }
+                if (!post) {
+                    return res.status(404).json({ error: `Comment ${comment._id} has no post associated with it` });
+                }
+            }
+
+        }
+
+        res.json(commentsWithPostTitles);
+    } catch (error) {
+        console.error("Error fetching user comments:", error);
+        res.status(500).json({ error: "Failed to fetch user comments" });
+    }
 });

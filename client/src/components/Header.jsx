@@ -62,7 +62,8 @@ const Header = () => {
 
     const handleProfileClick = () => {
       if(authUser) {
-        alert(`This would show ${authUser.displayName}'s profile. to be implemented`);
+        setView("ProfilePage");
+        // alert(`This would show ${authUser.displayName}'s profile. to be implemented`);
       }
       else {
         alert("Please log in to view profile.");
