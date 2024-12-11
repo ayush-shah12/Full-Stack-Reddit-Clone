@@ -70,11 +70,15 @@ const HomePage = () => {
                 const sortedOtherPosts = await sortPosts(sort, otherPosts);
 
                 //combine and mark separation:
-                const combined = [
-                    ...sortedUserCommPosts,
-                    {__type: "divider", label: "Posts from Other Communities"},
-                    ...sortedOtherPosts
-                ];
+                let combined = [];
+                    if (sortedUserCommPosts.length > 0) {
+                        combined.push({ __type: "label", label: "Posts from Your Communities" });
+                        combined = combined.concat(sortedUserCommPosts);
+                    }
+                    if (sortedOtherPosts.length > 0) {
+                        combined.push({ __type: "label", label: "Posts from Other Communities" });
+                        combined = combined.concat(sortedOtherPosts);
+                    }
 
                 setPosts(combined);
                 setNumPosts(infoPosts.length);
@@ -94,9 +98,8 @@ const HomePage = () => {
                 <NavBar />
                 <div id="main" className="main">
                     <header>
-                        {/* <h2 id="allposts">All Posts</h2> */}
-                        <h2 id = "allposts">
-                        {authUser ? "Posts from Your Communities" : "All Posts"}</h2>
+                        <h2 id="allposts">All Posts</h2>
+               
                         <div className="buttonContainer">
                             <button onClick={() => { setSort("Newest") }}>Newest</button>
                             <button onClick={() => { setSort("Oldest") }}>Oldest</button>
@@ -108,12 +111,12 @@ const HomePage = () => {
                     </div>
                     <div id="postContainer" className="postContainer">
                         {posts && posts.map((post, index) => {
-                            if(post.__type === "divider") {
+                            if(post.__type === "label") {
                                 {
                  
                                     return (
                                         // key warning with react without key:
-                                        <div key={`divider-${index}`} className="post-divider"> 
+                                        <div key={`label-${index}`} className="post-divider"> 
                                             <h3>{post.label}</h3>
                                             <hr />
                                         </div>
