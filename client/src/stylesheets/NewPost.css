@@ -80,3 +80,12 @@
 .submit-post-button:hover {
     background-color: #c52514;
 }
+
+.delete-comment-button {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

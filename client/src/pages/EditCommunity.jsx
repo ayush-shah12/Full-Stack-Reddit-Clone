@@ -114,6 +114,10 @@ const EditCommunity = () => {
 
     };
 
+    const handleDelete = async () => {
+        
+    };
+
     return (
         <div>
             <Header />
@@ -163,6 +167,7 @@ const EditCommunity = () => {
                             </button>
 
                         </form>
+                        <button onClick={handleDelete} className="delete-comment-button">Delete Community</button>
                     </div>
                 </div>
             </div>

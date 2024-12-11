@@ -110,6 +110,10 @@ const EditPost = () => {
 
         fetchPostData();
     }, [postID]);
+
+    const handleDelete = async () => {
+        
+    };
     return (
 
         <div>
@@ -182,6 +186,7 @@ const EditPost = () => {
                                 Update Post
                             </button>
                         </form>
+                        <button onClick={handleDelete} className="delete-comment-button">Delete Post</button>
                     </div>
                 </div>
             </div>
