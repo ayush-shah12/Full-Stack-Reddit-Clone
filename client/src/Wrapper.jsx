@@ -11,6 +11,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import WelcomePage from "./pages/WelcomePage";
 import ProfilePage from "./pages/ProfilePage";
+import EditPost from "./pages/EditPost";
+import EditCommunity from "./pages/EditCommunity";
+import EditComment from "./pages/EditComment";
 
 const Wrapper = () => {
     const { view} = useContext(ViewContext);
@@ -49,6 +52,15 @@ const Wrapper = () => {
         break;
       case "NewComment":
         content = <NewComment />;
+        break;
+      case "EditPost":
+        content = <EditPost />;
+        break;
+      case "EditCommunity":
+        content = <EditCommunity />;
+        break;
+      case "EditComment":
+        content = <EditComment />;
         break;
       default:
         content = <HomePage />;

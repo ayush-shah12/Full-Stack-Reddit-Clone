@@ -9,7 +9,7 @@ import "../stylesheets/index.css";
 
 
 const NewPost = () => {
-    const {setView, setPostID} = useContext(ViewContext);
+    const { setView, setPostID } = useContext(ViewContext);
     const { authUser } = useContext(UserContext);
 
     //state for input forms
@@ -40,7 +40,7 @@ const NewPost = () => {
                 let communityList = response.data;
 
                 //sort for joined communitites:
-                if(authUser) {
+                if (authUser) {
                     const joinedCommunities = communityList.filter(c => c.members && c.members.includes(authUser.id));
                     const otherCommunities = communityList.filter(c => !c.members || !c.members.includes(authUser.id));
                     communityList = [...joinedCommunities, ...otherCommunities];
@@ -62,10 +62,10 @@ const NewPost = () => {
                 const response = await axios.get('http://localhost:8000/linkFlairs');
                 setAvailableLinkFlairs(response.data);
             }
-            catch(error) {
+            catch (error) {
                 console.error("error fetching link flairs: ", error);
             }
-            
+
         }; fetchLinkFlairs();
     }, []);
 
@@ -77,8 +77,8 @@ const NewPost = () => {
         const newErrors = {
             selectedCommunity: '',
             postTitle: '',
-            linkFlair:'',
-            postContent:'',
+            linkFlair: '',
+            postContent: '',
             server: '',
         };
 
@@ -86,18 +86,18 @@ const NewPost = () => {
             newErrors.selectedCommunity = "Community selection is required.";
             isValid = false;
         }
-    
-        if(postTitle.trim() === ''){
+
+        if (postTitle.trim() === '') {
             newErrors.postTitle = "Post Title is required.";
             isValid = false;
         }
-        else if(postTitle.length>100){
+        else if (postTitle.length > 100) {
             newErrors.postTitle = "Post Title should not exceed 100 characters.";
             isValid = false;
         }
 
-        if(showNewLinkFlairInput) {
-            if(newLinkFlair.trim() === "") {
+        if (showNewLinkFlairInput) {
+            if (newLinkFlair.trim() === "") {
                 newErrors.linkFlair = "New Link Flair is required.";
                 isValid = false;
             }
@@ -106,14 +106,14 @@ const NewPost = () => {
                 isValid = false;
             }
         }
-        if(postContent.trim() === "") {
+        if (postContent.trim() === "") {
             newErrors.postContent = "Post Content is required.";
             isValid = false;
         }
 
         setErrors(newErrors);
 
-        if(isValid) {
+        if (isValid) {
             try {
                 const payload = {
                     title: postTitle.trim(),
@@ -121,10 +121,10 @@ const NewPost = () => {
                     postedBy: authUser.id,
                     communityID: selectedCommunity,
                 };
-                if(linkFlair){
+                if (linkFlair) {
                     payload.linkFlairID = linkFlair;
                 }
-                if(linkFlair === "AddNewLinkFlair") {
+                if (linkFlair === "AddNewLinkFlair") {
                     payload.linkFlairID = "AddNewLinkFlair";
                     payload.newLinkFlair = newLinkFlair.trim();
                 }
@@ -148,29 +148,29 @@ const NewPost = () => {
                     server: '',
                 });
             }
-            catch(error) {
+            catch (error) {
                 console.error("Error creating post:", error);
                 let serverError = "Failed to create post";
-                if(error.response && error.response.data && error.response.data.error) {
+                if (error.response && error.response.data && error.response.data.error) {
                     serverError = error.response.data.error;
                 }
-                setErrors(prevErrors => ({...prevErrors, server: serverError}));
+                setErrors(prevErrors => ({ ...prevErrors, server: serverError }));
 
             }
         }
-        else{
+        else {
             setSelectedCommunity(selectedCommunity.trim());
             setPostTitle(postTitle.trim());
             setNewLinkFlair(newLinkFlair.trim());
             setPostContent(postContent.trim());
         }
     };
-    
+
     const handleLinkFlairChange = (e) => {
         const value = e.target.value;
         setLinkFlair(value);
 
-        if(value === "AddNewLinkFlair") {
+        if (value === "AddNewLinkFlair") {
             setShowNewLinkFlairInput(true);
             setNewLinkFlair("");
         }
@@ -183,97 +183,97 @@ const NewPost = () => {
     return (
 
         <div>
-        <Header />
-        <div className="containerSideMain">
-            <NavBar />
-            <div id="main" className="main">
-        <div className = "new-post-container">
-            <h2>Create a New Post</h2>
-            {errors.server && <div className = "error-message"> {errors.server}</div>}
-            <form onSubmit = {handleSubmit} className = "new-post-form">
-                {/* community selection */}
-                <div className = "form-group">
-                    <label htmlFor="communitySelect">
-                        Select Community <span className = "required">*</span>
-                    </label>
-                    <select
-                    id ="communitySelect"
-                    value = {selectedCommunity}
-                    onChange={(e) => setSelectedCommunity(e.target.value)} required>
-                        <option value="" style={{fontStyle: 'italic'}}>Select a Community</option>
-                        {communities.map((community) => (
-                            <option key = {community._id} value = {community._id}>{community.name}</option>
-                        ))}
-                    </select>
-                    {errors.selectedCommunity && <span className = "error-message">
-                        {errors.selectedCommunity}</span>}
-                 
-                </div>
+            <Header />
+            <div className="containerSideMain">
+                <NavBar />
+                <div id="main" className="main">
+                    <div className="new-post-container">
+                        <h2>Create a New Post</h2>
+                        {errors.server && <div className="error-message"> {errors.server}</div>}
+                        <form onSubmit={handleSubmit} className="new-post-form">
+                            {/* community selection */}
+                            <div className="form-group">
+                                <label htmlFor="communitySelect">
+                                    Select Community <span className="required">*</span>
+                                </label>
+                                <select
+                                    id="communitySelect"
+                                    value={selectedCommunity}
+                                    onChange={(e) => setSelectedCommunity(e.target.value)} required>
+                                    <option value="" style={{ fontStyle: 'italic' }}>Select a Community</option>
+                                    {communities.map((community) => (
+                                        <option key={community._id} value={community._id}>{community.name}</option>
+                                    ))}
+                                </select>
+                                {errors.selectedCommunity && <span className="error-message">
+                                    {errors.selectedCommunity}</span>}
 
-                {/* post title */}
-                <div className = "form-group">
-                    <label htmlFor = "postTitle">Post Title <span className = "required">*</span></label>
-                    <input
-                    type = "text"
-                    id = "postTitle"
-                    value = {postTitle}
-                    onChange = {(e)=> setPostTitle(e.target.value)}
-                    maxLength = "100"
-                    required
-                    />
-                    {errors.postTitle && <span className = "error-message"> {errors.postTitle}</span>}
-                    <small>{postTitle.length}/100 chars</small>
-                </div>
+                            </div>
 
-                {/* link flair */}
-                <div className ="form-group">
-                    <label htmlFor = "linkFlairSelect"> Link Flair (Optional)</label>
-                    <select
-                    id = "linkFlairSelect"
-                    value = {linkFlair}
-                    onChange = {handleLinkFlairChange}
-                    >
-                        <option value ="" style={{fontStyle: 'italic'}}>Select a Link Flair</option>
-                        {availableLinkFlairs.map((flair) => (
-                            <option key = {flair._id} value = {flair._id}>{flair.content}</option>
-                        ))}
-                         <option disabled>_______________</option>
-                        <option value ="AddNewLinkFlair" style={{fontWeight: "500"}}>Add New Link Flair</option>
-                    </select>
-                    {errors.linkFlair && <span className = "error-message">{errors.linkFlair}</span>}
+                            {/* post title */}
+                            <div className="form-group">
+                                <label htmlFor="postTitle">Post Title <span className="required">*</span></label>
+                                <input
+                                    type="text"
+                                    id="postTitle"
+                                    value={postTitle}
+                                    onChange={(e) => setPostTitle(e.target.value)}
+                                    maxLength="100"
+                                    required
+                                />
+                                {errors.postTitle && <span className="error-message"> {errors.postTitle}</span>}
+                                <small>{postTitle.length}/100 chars</small>
+                            </div>
+
+                            {/* link flair */}
+                            <div className="form-group">
+                                <label htmlFor="linkFlairSelect"> Link Flair (Optional)</label>
+                                <select
+                                    id="linkFlairSelect"
+                                    value={linkFlair}
+                                    onChange={handleLinkFlairChange}
+                                >
+                                    <option value="" style={{ fontStyle: 'italic' }}>Select a Link Flair</option>
+                                    {availableLinkFlairs.map((flair) => (
+                                        <option key={flair._id} value={flair._id}>{flair.content}</option>
+                                    ))}
+                                    <option disabled>_______________</option>
+                                    <option value="AddNewLinkFlair" style={{ fontWeight: "500" }}>Add New Link Flair</option>
+                                </select>
+                                {errors.linkFlair && <span className="error-message">{errors.linkFlair}</span>}
+                            </div>
+                            {showNewLinkFlairInput && (
+                                <div className="form-group">
+                                    <label htmlFor="newLinkFlair">New Link Flair (Optional)</label>
+                                    <input
+                                        type="text"
+                                        id="newLinkFlair"
+                                        value={newLinkFlair}
+                                        onChange={(e) => setNewLinkFlair(e.target.value)}
+                                        maxLength="30"
+                                    />
+                                    {errors.linkFlair && <span className="error-message">{errors.linkFlair}</span>}
+                                    <small>{newLinkFlair.length}/30 characters</small>
+                                </div>
+                            )}
+                            {/* post cont */}
+                            <div className="form-group">
+                                <label htmlFor="postContent">Post Content<span className="required">*</span></label>
+                                <textarea
+                                    id="postContent"
+                                    value={postContent}
+                                    onChange={(e) => setPostContent(e.target.value)}
+                                    required
+                                ></textarea>
+                                {errors.postContent && <span className="error-message">{errors.postContent}</span>}
+                            </div>
+
+                            <button type="submit" className="submit-post-button">
+                                Submit Post
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                {showNewLinkFlairInput && (
-                <div className = "form-group">
-                    <label htmlFor = "newLinkFlair">New Link Flair (Optional)</label>
-                    <input
-                        type="text"
-                        id="newLinkFlair"
-                        value={newLinkFlair}
-                        onChange={(e) => setNewLinkFlair(e.target.value)}
-                        maxLength="30"
-                    />
-                    {errors.linkFlair && <span className="error-message">{errors.linkFlair}</span>}
-                    <small>{newLinkFlair.length}/30 characters</small>
-                </div>
-)}
-                {/* post cont */}
-                <div className="form-group">
-                    <label htmlFor="postContent">Post Content<span className = "required">*</span></label>
-                    <textarea
-                        id="postContent"
-                        value={postContent}
-                        onChange={(e) => setPostContent(e.target.value)}
-                        required
-                    ></textarea>
-                    {errors.postContent && <span className="error-message">{errors.postContent}</span>}
-                </div>
-         
-                <button type="submit" className="submit-post-button">
-                    Submit Post
-                </button>
-            </form>
-        </div>
-        </div>
             </div>
         </div>
     );

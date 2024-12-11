@@ -10,6 +10,7 @@ import "../stylesheets/ProfilePage.css";
 
 const ProfilePage = () => {
     const { authUser } = useContext(UserContext);
+    const { setView, setCommunityID, setCommentID } = useContext(ViewContext);
 
     const [selection, setSelection] = useState("Posts");
     const [posts, setPosts] = useState([]);
@@ -39,7 +40,8 @@ const ProfilePage = () => {
 
 
     function onClickCommunity(community) {
-        alert(`Clicking this will allow you to edit the community named: ${community.name}`);
+        setCommunityID(community._id);
+        setView("EditCommunity");
         return;
     }
 
@@ -58,7 +60,8 @@ const ProfilePage = () => {
         ));
     }
     function onClickComment(comment) {
-        alert(`Clicking this will allow you to edit the comment ID: ${comment.comment._id}`);
+        setCommentID(comment.comment._id);
+        setView("EditComment");
         return;
     }
 

@@ -152,7 +152,8 @@ function Post({ post, fullPost = false, showCommunityName = true, profilePost = 
     function onClickPostTitle(postID){
         // set view to EDIT the post
         // to be implemented
-        alert(`Clicking this will allow you to edit the post: ${post.title}`);
+        setPostID(postID);
+        setView("EditPost");
         return;
     }
 
