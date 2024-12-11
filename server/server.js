@@ -918,3 +918,39 @@ app.put('/comments/update/:commentID', async (req, res) => {
         res.status(500).json({ error: "Failed to update comment" });
     }
 });
+
+// returns an array of replies to a commentID
+app.get('/comments/:commentID/replies', async (req, res) => {
+    try {
+        const comment = await CommentModel.findById(req.params.commentID);
+        if (!comment) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+        replies= [];
+        for (const replyID of comment.commentIDs) {
+            replies.push(replyID);
+        }
+        return res.json(replies);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get replies" });
+    }
+});
+
+// delete comment from commentID, also removes it from PostModel
+app.delete('/comments/delete/:commentID', async (req, res) => {
+    try {
+        const comment = await CommentModel.findById(req.params.commentID);
+        if (!comment) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+
+        await PostModel.updateMany(
+            { commentIDs: comment._id },
+            { $pull: { commentIDs: comment._id } }
+        );
+        await comment.deleteOne(); 
+        res.status(201);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to delete comment" });
+    }
+});
