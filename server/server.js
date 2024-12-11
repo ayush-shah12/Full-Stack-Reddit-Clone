@@ -744,7 +744,7 @@ app.get('/users/:userID/communities', async (req, res) => {
     }
 });
 
-// get all comments by a user
+// get all comments by a user (including replies)
 app.get('/users/:userID/comments', async (req, res) => {
     try {
         const comments = await CommentModel.find({ commentedBy: req.params.userID });
@@ -783,5 +783,138 @@ app.get('/users/:userID/comments', async (req, res) => {
     } catch (error) {
         console.error("Error fetching user comments:", error);
         res.status(500).json({ error: "Failed to fetch user comments" });
+    }
+});
+
+// get post from postID
+app.get('/posts/alldata/:postID', async (req, res) => {
+    try {
+        const post = await PostModel.findById(req.params.postID);
+        if (post) {
+            res.json(post);
+        } else {
+            res.status(404).json({ error: "Post not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch post" });
+    }
+});
+
+// updates post given a postID, only title and content can be updated
+app.put('/posts/update/:postID', async (req, res) => {
+    try {
+        const post = await PostModel.findById(req.params.postID);
+        if (!post) {
+            console.error("Error fetching post:", error);
+            return res.status(404).json({ error: "Post not found" });
+        }
+
+        const { title, content } = req.body;
+        if (!title && !content) {
+            return res.status(400).json({ error: "Title or content must be provided" });
+        }
+
+        if (title) {
+            post.title = title;
+        }
+        if (content) {
+            post.content = content;
+        }
+
+        const updatedPost = await post.save();
+        res.status(201).json(updatedPost);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to update post" });
+    }
+});
+
+
+// gets community given a communityID
+app.get('/communities/alldata/:communityID', async (req, res) => {
+    try {
+        const community = await CommunityModel.findById(req.params.communityID);
+        if (community) {
+            res.json(community);
+        } else {
+            res.status(404).json({ error: "Community not found" });
+        }
+    } catch (error) {
+        res.json(500).json({ error: "Failed to fetch community" });
+    }
+});
+
+
+// updates community given a communityID
+app.put('/communities/update/:communityID', async (req, res) => {
+    try{
+        const community = await CommunityModel.findById(req.params.communityID);
+        if(!community){
+            return res.status(404).json({error: "Community not found"});
+        }
+
+        const {name, description} = req.body;
+        if(!name && !description){
+            return res.status(400).json({error: "Name or description must be provided"});
+        }
+
+        if(name){
+            community.name = name;
+        }
+        if(description){
+            community.description = description;
+        }
+
+        const updatedCommunity = await community.save();
+        res.status(201).json(updatedCommunity);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to update community" });
+
+    };
+});
+
+
+app.get('/communities/exists/:communityName', async (req, res) => {
+    try {
+        const name = req.params.communityName;
+        const community = await CommunityModel.findOne({name: name});
+        if (community) {
+            res.json({ exists: true });
+        } else {
+            res.json({ exists: false });
+        }
+    } catch (error) {
+        res.status(500).json({ error });
+    }
+});
+
+// update comment from commentID
+app.get('/comments/alldata/:commentID', async (req, res) => {
+    try {
+        const comment = await CommentModel.findById(req.params.commentID);
+        if (!comment) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+        res.status(201).json(comment);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get comment" });
+    }
+});
+
+// update comment from commentID
+app.put('/comments/update/:commentID', async (req, res) => {
+    try {
+        const comment = await CommentModel.findById(req.params.commentID);
+        if (!comment) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+        const { content } = req.body;
+        if (!content) {
+            return res.status(400).json({ error: "Content is required" });
+        }
+        comment.content = content;
+        const updatedComment = await comment.save();
+        res.status(201).json(updatedComment);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to update comment" });
     }
 });

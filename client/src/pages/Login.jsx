@@ -1,8 +1,8 @@
-import "../stylesheets/LoginPage.css";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { ViewContext } from "../context/ViewContext";
 import { UserContext } from "../context/UserContext";
 import axios from "axios";
+import "../stylesheets/LoginPage.css";
 
 const Login = () => {
     const { setView } = useContext(ViewContext);
@@ -10,7 +10,9 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleLogin = async () => {
+    const handleLogin = async (e) => {
+        e.preventDefault();
+
         try {
             const response = await axios.post("http://localhost:8000/auth/login", {
                 email: email,
@@ -26,12 +28,10 @@ const Login = () => {
             if (response.status === 200) {
                 setAuthUser(response.data);
                 setView("Home");
-            }
-            else if (response.status === 401) {
+            } else if (response.status === 401) {
                 alert("Email and/or password is incorrect");
                 console.error("Invalid credentials");
-            }
-            else {
+            } else {
                 alert("A server error occurred. Please try again.");
                 console.error("An error occurred");
             }
@@ -41,6 +41,7 @@ const Login = () => {
             console.error("There was an error logging in!", error);
         }
     };
+
     const handleRegister = () => {
         setView("Register");
     };
@@ -53,20 +54,24 @@ const Login = () => {
         <div className="welcome-container">
             <div className="welcome-content">
                 <h1>Login!</h1>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button onClick={handleLogin}>Login</button>
-                <button onClick={handleRegister}>To Register Page</button>
+                <form onSubmit={handleLogin}>
+                    <input 
+                        type="email" 
+                        placeholder="Email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        autoComplete="email"
+                    />
+                    <input 
+                        type="password" 
+                        placeholder="Password" 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                        autoComplete="current-password"
+                    />
+                    <button type="submit">Login</button>
+                </form>
+                <button onClick={handleRegister}>Register</button>
                 <button onClick={handleGuest}>Continue as Guest</button>
             </div>
         </div>

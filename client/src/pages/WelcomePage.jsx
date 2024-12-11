@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { ViewContext } from "../context/ViewContext"; 
 import { UserContext } from "../context/UserContext"; 
 import "../stylesheets/WelcomePage.css";
@@ -8,21 +8,32 @@ const WelcomePage = () => {
     const { setView } = useContext(ViewContext);
     const { authUser, setAuthUser } = useContext(UserContext);
 
-    // check if a valid token is stored currently
-    const checkUser = async () => {
-        const response = await axios.get("http://localhost:8000/auth/token", {
-            withCredentials: true,
-            validateStatus: () => true
-        });
+    useEffect(() => {
+        const checkUser = async () => {
+            try {
+                const response = await axios.get("http://localhost:8000/auth/token", {
+                    withCredentials: true,
+                    validateStatus: () => true
+                });
 
-        if (response.status === 200) {
-            setAuthUser(response.data);
-        }
-        else {
-            console.log("No valid token found");
-        }
+                if (response.status === 200) {
+                    setAuthUser(response.data);
+                } else {
+                    console.log("No valid token found");
+                }
+            } catch (error) {
+                console.error("Error checking user:", error);
+            }
         };
 
+        checkUser();
+    }, [setAuthUser]);
+
+    useEffect(() => {
+        if (authUser) {
+            setView('Home');
+        }
+    }, [authUser, setView]);
 
     const handleLoginClick = () => {
         setView('Login');
@@ -36,18 +47,10 @@ const WelcomePage = () => {
         setView('Home');
     };
 
-    if (authUser) {
-        setView('Home');
-    }
-    else{
-        checkUser();
-    }
-
     return (
         <div className="welcome-container">
             <div className="welcome-content">
-                <h1>Welcome to Phreddit!</h1>
-                <h2>Please choose an option below:</h2>
+                <h1>Welcome!</h1>
                 <button onClick={handleLoginClick}>Login</button>
                 <button onClick={handleRegisterClick}>Register</button>
                 <button onClick={handleGuestClick}>Continue as Guest</button>
