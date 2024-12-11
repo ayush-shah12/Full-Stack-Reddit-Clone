@@ -66,3 +66,8 @@
     text-decoration: none;
     color: black;
 }
+.post-divider hr {
+    border: none;
+    border-top: 2px solid #ccc;
+    margin-top: 10px;
+}
