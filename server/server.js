@@ -232,6 +232,7 @@ app.get('/search', async (req, res) => {
                 { content: { $in: regexTerms } }
             ]
         }).select('title content postedBy postedDate views linkFlairID commentIDs')
+            .populate('postedBy', 'displayName')
             .lean();
 
         //find posts with nested matching comments
