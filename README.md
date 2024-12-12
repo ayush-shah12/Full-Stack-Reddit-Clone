@@ -49,7 +49,17 @@ npm install
 mongod
 ```
 
-4. Start the server
+4. Initialize the database with default admin account:
+
+- Inside the `server` directory, run the following:
+
+```sh
+node init.js <email> <displayName> <password>
+```
+
+Replace `<email>`, `<displayName>`, and `<password>` with the credentials for the admin account you want to create. This step will set up the initial admin account and populate database with any required default data.
+
+5. Start the server
 
 ```sh
 node server.js
@@ -82,13 +92,13 @@ The application will open in your browser at http://localhost:3000/
 ### Testing Instructions.
 
 1. Server Tests.
-   Run the server test in server directory:
+   Run the server test in `server` directory:
 
 ```sh
 npm test
 ```
 
-2. Client Test. Navigate to the client directory:
+2. Client Test. Navigate to the `client` directory:
 
 ```sh
 cd ../client
