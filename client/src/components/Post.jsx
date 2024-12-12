@@ -150,8 +150,6 @@ function Post({ post, fullPost = false, showCommunityName = true, profilePost = 
 
     // only for rendering posts on ****Profile Page****, will allow user to edit post
     function onClickPostTitle(postID){
-        // set view to EDIT the post
-        // to be implemented
         setPostID(postID);
         setView("EditPost");
         return;
@@ -161,13 +159,11 @@ function Post({ post, fullPost = false, showCommunityName = true, profilePost = 
     // specifically for rendering posts on ****Profile Page****
     if (profilePost) {
         return (
-            <div className="linkToPost nav-link" onClick={() => onClickPostTitle(post._id)} style={{ cursor: "pointer" }}>
-            <div className="profilePost">
-                <div className="postTitle">
+            <div className="admin-profilePostContainer" onClick={() => onClickPostTitle(post._id)}>
+                <div className="admin-postTitle">
                     <h3>{post.title}</h3>
                 </div>
             </div>
-        </div>
         );
     }
 

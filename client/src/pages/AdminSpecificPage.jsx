@@ -1,3 +1,7 @@
+// Specifcally made so Admin can view any user account
+// Exact same as ProfilePage, but with one extra button to go back to AdminPage 
+// this could have been done with ProfilePage, but no time to refactor (reason is that profilePage depends on the logged in user, while this page depends on the selected user)
+
 import React, { useContext, useState, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
 import { ViewContext } from "../context/ViewContext";
@@ -8,9 +12,9 @@ import axios from "axios";
 import Post from "../components/Post";
 import "../stylesheets/ProfilePage.css";
 
-const ProfilePage = () => {
-    const { authUser } = useContext(UserContext);
-    const { setView, setCommunityID, setCommentID } = useContext(ViewContext);
+const AdminSpecificPage = () => {
+
+    const { adminSelectUser, setView, setCommunityID, setCommentID } = useContext(ViewContext);
 
     const [selection, setSelection] = useState("Posts");
     const [posts, setPosts] = useState([]);
@@ -21,13 +25,13 @@ const ProfilePage = () => {
         const fetchData = async () => {
             try {
                 if (selection === "Posts") {
-                    const response = await axios.get(`http://localhost:8000/users/${authUser.id}/posts`);
+                    const response = await axios.get(`http://localhost:8000/users/${adminSelectUser._id}/posts`);
                     setPosts(response.data);
                 } else if (selection === "Communities") {
-                    const response = await axios.get(`http://localhost:8000/users/${authUser.id}/communities`);
+                    const response = await axios.get(`http://localhost:8000/users/${adminSelectUser._id}/communities`);
                     setCommunities(response.data);
                 } else if (selection === "Comments") {
-                    const response = await axios.get(`http://localhost:8000/users/${authUser.id}/comments`);
+                    const response = await axios.get(`http://localhost:8000/users/${adminSelectUser._id}/comments`);
                     setComments(response.data);
                 }
             } catch (error) {
@@ -36,7 +40,7 @@ const ProfilePage = () => {
         };
 
         fetchData();
-    }, [selection, authUser.id]);
+    }, [selection, adminSelectUser._id]);
 
 
     function onClickCommunity(community) {
@@ -45,11 +49,26 @@ const ProfilePage = () => {
         return;
     }
 
+    // function renderComments() {
+    //     return comments && comments.map((comment) => (
+    //         <div key={comment.comment._id} className="linkToPost nav-link" onClick={() => { onClickComment(comment) }} style={{ cursor: "pointer" }}>
+    //             <div className="comment">
+    //                 <h4>
+    //                     Post Title: {comment.postTitle}
+    //                 </h4>
+    //                 <h4>
+    //                     Comment: {comment.comment.content.trim().substring(0, 20)}
+    //                 </h4>
+    //             </div>
+    //         </div>
+    //     ));
+    // }
+
     function renderComments() {
         return comments && comments.map((comment) => (
             <div key={comment.comment._id} className="admin-linkToPost nav-link" onClick={() => { onClickComment(comment) }} style={{ cursor: "pointer" }}>
-            <div className="admin-commentContainer2">
-                {/* <div key={comment.comment._id} className="admin-linkToPost nav-link" onClick={() => { onClickCommentAdmin(comment) }} style={{ cursor: "pointer" }}> */}
+                <div className="admin-commentContainer2">
+                    {/* <div key={comment.comment._id} className="admin-linkToPost nav-link" onClick={() => { onClickCommentAdmin(comment) }} style={{ cursor: "pointer" }}> */}
                     {/* <div className="admin-commentContainer2"> */}
                     <h4 className="admin-commentTitle">Post Title: {comment.postTitle}</h4>
                     <h4 className="admin-commentTitle">Comment: {comment.comment.content.trim().substring(0, 20)}</h4>
@@ -57,7 +76,6 @@ const ProfilePage = () => {
             </div>
         ));
     }
-
 
     function onClickComment(comment) {
         setCommentID(comment.comment._id);
@@ -72,7 +90,7 @@ const ProfilePage = () => {
                 <NavBar />
                 <div id="main" className="main">
                     <header>
-                        <h2 id="allposts">u/{authUser.displayName}'s Profile</h2>
+                        <h2 id="allposts">u/{adminSelectUser.displayName}'s Profile [VIEWING AS ADMIN] </h2>
                         <div className="buttonContainer">
                             <button
                                 className={selection === "Posts" ? "selected" : ""}
@@ -92,12 +110,19 @@ const ProfilePage = () => {
                             >
                                 Comments
                             </button>
+                            <button
+                                className="backButton"
+                                id="backButton"
+                                onClick={() => { setView("AdminPage") }}                                
+                            >
+                                Back to Admin Page
+                            </button>
                         </div>
                     </header>
                     <div className="postCountDiv">
-                        <h4 id="numPosts">Email: {authUser.email}  </h4>
-                        <h4 id="numPosts">Member Since: {generateTimeStamp(authUser.dateJoined)}  </h4>
-                        <h4 id="numPosts">Reputation: {authUser.reputation}  </h4>
+                        <h4 id="numPosts">Email: {adminSelectUser.email}  </h4>
+                        <h4 id="numPosts">Member Since: {generateTimeStamp(adminSelectUser.dateJoined)}  </h4>
+                        <h4 id="numPosts">Reputation: {adminSelectUser.reputation}  </h4>
                     </div>
 
                     <div id="admin-postContainer" className="admin-postContainer">
@@ -128,7 +153,7 @@ const ProfilePage = () => {
                         {selection === "Comments" && (
                             comments.length > 0 ? (
                                 <div className="admin-commentContainer">
-                                {renderComments()}
+                                    {renderComments()}
                                 </div>
                             ) : (
                                 <p>No comments available.</p>
@@ -142,6 +167,6 @@ const ProfilePage = () => {
     )
 }
 
-export default ProfilePage;
+export default AdminSpecificPage;
 
 

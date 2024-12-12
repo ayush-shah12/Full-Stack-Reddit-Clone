@@ -5,9 +5,11 @@ import { ViewContext } from "../context/ViewContext";
 import axios from "axios";
 import "../stylesheets/CreateCommunity.css";
 import "../stylesheets/index.css";
+import { UserContext } from "../context/UserContext";
 
 const EditCommunity = () => {
     const { setView, communityID } = useContext(ViewContext);
+    const { authUser } = useContext(UserContext);
 
     //state for form inputs
     const [communityName, setCommunityName] = useState('');
@@ -98,7 +100,12 @@ const EditCommunity = () => {
                     communityDescription: '',
                 });
 
-                setView("ProfilePage");
+                if(authUser.role === "admin"){
+                    setView("AdminPage");
+                }
+                else{
+                    setView("ProfilePage");
+                }
 
 
             }
@@ -115,7 +122,7 @@ const EditCommunity = () => {
     };
 
     const handleDelete = async () => {
-        
+        // alert("In Progress");
     };
 
     return (
