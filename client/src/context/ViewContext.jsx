@@ -8,6 +8,7 @@ export function ViewContextProvider({ children }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [commentID, setCommentID] = useState(null);
+    const [adminSelectUser, setAdminSelectUser] = useState(null);
 
     return (
         <ViewContext.Provider 
@@ -24,6 +25,8 @@ export function ViewContextProvider({ children }) {
             setSearchResults,
             commentID,
             setCommentID,
+            adminSelectUser,
+            setAdminSelectUser
             }}
         >
 

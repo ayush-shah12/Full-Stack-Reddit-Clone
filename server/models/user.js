@@ -34,7 +34,11 @@ const user = new mongoose.Schema({
     dateJoined: {
         type: Date,
         default: Date.now
-    }
+    },
+    role: {
+        type: String,
+        default: "user"
+    },
 });
 
 

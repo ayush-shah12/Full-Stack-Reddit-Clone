@@ -19,6 +19,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 
 const app = express();
@@ -919,6 +920,42 @@ app.put('/comments/update/:commentID', async (req, res) => {
     }
 });
 
+
+
+
+app.get('/users', async (req, res) => {
+    try {
+        const users = await UserModel.find();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch users" });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// IN DEVELOPMENT ROUTES BELOW ******************
+
 // returns an array of replies to a commentID
 app.get('/comments/:commentID/replies', async (req, res) => {
     try {
@@ -952,5 +989,50 @@ app.delete('/comments/delete/:commentID', async (req, res) => {
         res.status(201);
     } catch (error) {
         res.status(500).json({ error: "Failed to delete comment" });
+    }
+});
+
+
+// END IN DEVELOPMENT ROUTES ******************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// TEST ROUTE TO CREATE ADMIN USER
+app.get('/createAdmin', async (req, res) => {
+    try {
+        const hashedPassword = await bcrypt.hash("password", 10);
+        const admin = new UserModel({
+            firstName:"adminFIRST",
+            lastName:"adminLAST",
+            email: "admin@gmail.com",
+            password: hashedPassword,
+            displayName: "adminDISPLAY",
+            role: "admin",
+            reputation: 1000,
+        });
+        await admin.save();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to create admin" });
     }
 });

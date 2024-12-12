@@ -5,10 +5,12 @@ import { ViewContext } from "../context/ViewContext";
 import axios from "axios";
 import "../stylesheets/NewPost.css";
 import "../stylesheets/index.css";
+import { UserContext } from "../context/UserContext";
 
 
 const EditPost = () => {
     const { setView, postID } = useContext(ViewContext);
+    const { authUser } = useContext(UserContext);
 
     //state for input forms
     const [postTitle, setPostTitle] = useState('');
@@ -71,7 +73,12 @@ const EditPost = () => {
                     server: '',
                 });
                 
-                setView("ProfilePage");
+                if(authUser.role === "admin"){
+                    setView("AdminPage");
+                }
+                else{
+                    setView("ProfilePage");
+                }
 
             }
             catch (error) {
@@ -98,7 +105,11 @@ const EditPost = () => {
                 setPostTitle(post.title);
                 setPostContent(post.content);
                 setSelectedCommunity(post.community);
-                setLinkFlair(post.linkFlair);
+                if(post.linkFlairID) {
+                    const linkflair = await axios.get(`http://localhost:8000/linkFlairs/${post.linkFlairID}`);
+                    setLinkFlair(linkflair.data.content);
+                }
+
 
                 // Fetch the community name based on the selected community ID
                 const communityResponse = await axios.get(`http://localhost:8000/communityName/${postID}`);
@@ -112,7 +123,7 @@ const EditPost = () => {
     }, [postID]);
 
     const handleDelete = async () => {
-        
+        // alert("In Progress");
     };
     return (
 

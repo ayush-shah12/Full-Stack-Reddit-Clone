@@ -14,6 +14,8 @@ import ProfilePage from "./pages/ProfilePage";
 import EditPost from "./pages/EditPost";
 import EditCommunity from "./pages/EditCommunity";
 import EditComment from "./pages/EditComment";
+import AdminPage from "./pages/AdminPage";
+import AdminSpecificPage from "./pages/AdminSpecificPage";
 
 const Wrapper = () => {
     const { view} = useContext(ViewContext);
@@ -61,6 +63,12 @@ const Wrapper = () => {
         break;
       case "EditComment":
         content = <EditComment />;
+        break;
+      case "AdminPage":
+        content = <AdminPage />;
+        break;
+      case "AdminSpecificPage":
+        content = <AdminSpecificPage />;
         break;
       default:
         content = <HomePage />;

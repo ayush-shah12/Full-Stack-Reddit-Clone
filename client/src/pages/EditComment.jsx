@@ -3,10 +3,13 @@ import Header from "../components/Header";
 import NavBar from "../components/Navbar";
 import axios from "axios";
 import { ViewContext } from "../context/ViewContext.jsx";
+import { UserContext } from "../context/UserContext.jsx";
 import "../stylesheets/NewComment.css";
 
 const EditComment = () => {
     const { setView, commentID } = useContext(ViewContext);
+    const { authUser } = useContext(UserContext);
+
 
     //state forms
     const [commentContent, setCommentContent] = useState("");
@@ -63,7 +66,12 @@ const EditComment = () => {
                 setErrors({
                     commentContent: "",
                 });
-                setView("ProfilePage");
+                if(authUser.role === "admin"){
+                    setView("AdminPage");
+                }
+                else{
+                    setView("ProfilePage");
+                }
             }
             catch (error) {
                 setErrors({
@@ -78,6 +86,7 @@ const EditComment = () => {
     };
 
     const handleDelete = async () => {
+        // alert("In Progress");
     //     try {
     //         await deleteCommentAndReplies(commentID);
     //         console.log("Comment and replies deleted successfully");
