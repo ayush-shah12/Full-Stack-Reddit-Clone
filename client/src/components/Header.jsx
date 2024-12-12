@@ -1,3 +1,4 @@
+import React from "react";
 import { useContext, useState } from "react";
 import { ViewContext } from "../context/ViewContext";
 import { UserContext } from "../context/UserContext";

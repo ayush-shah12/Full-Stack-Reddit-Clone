@@ -1037,3 +1037,6 @@ app.get('/createAdmin', async (req, res) => {
         res.status(500).json({ error: "Failed to create admin" });
     }
 });
+
+
+module.exports = app;
