@@ -1,3 +1,12 @@
+# Reddit Clone
+![image](https://github.com/user-attachments/assets/40f9dd26-ed02-4916-9edc-b02091673009)
+
+![image](https://github.com/user-attachments/assets/5fe682fc-81e1-4c88-9d6d-e82b95a06730)
+
+![image](https://github.com/user-attachments/assets/87582cb4-a377-4dcc-bdc8-f921d7a0848a)
+
+
+
 ## Instructions to setup and run project
 
 ### Prerequisites:
