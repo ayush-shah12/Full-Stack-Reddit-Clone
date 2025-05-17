@@ -10,6 +10,13 @@
 
 ### Server Setup:
 
+#### Note: Windows Users
+- Skip the client, server, and database setup by running:
+```sh
+scripts\start
+```
+
+
 1. Clone repository:
 
 - If using HTTPS:
