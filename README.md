@@ -1,9 +1,3 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/MVUO33FO)
-
-# Term Project
-
-Add design docs in *images/*
-
 ## Instructions to setup and run project
 
 ### Prerequisites:
@@ -22,7 +16,7 @@ Add design docs in *images/*
 
 ```sh
 
-git clone https://github.com/sbu-ckane-f24-cse316-pa01org/project-ae_project.git
+git clone https://github.com/ayush-shah12/Full-Stack-Reddit-Clone.git
 ```
 
 - If using SSH:
@@ -34,7 +28,7 @@ git clone git@github.com:sbu-ckane-f24-cse316-pa01org/project-ae_project.git
 Next, in the terminal of the local repository type the following:
 
 ```sh
-cd project-ae_project/server
+cd Full-Stack-Reddit-Clone/server
 ```
 
 2. Install server dependencies:
@@ -107,7 +101,7 @@ npm test
 
 In the sections below, list and describe each contribution briefly.
 
-## Team Member 1 Contribution - Ayush
+## Team Member 1 Contribution
 
 - Test Cases 1-5
 - Test Cases 15-19
