@@ -38,7 +38,7 @@ git clone https://github.com/ayush-shah12/Full-Stack-Reddit-Clone.git
 - If using SSH:
 
 ```sh
-git clone git@github.com:sbu-ckane-f24-cse316-pa01org/project-ae_project.git
+git clone git@github.com:ayush-shah12/Full-Stack-Reddit-Clone.git
 ```
 
 Next, in the terminal of the local repository type the following:
